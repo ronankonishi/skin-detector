@@ -58,9 +58,11 @@ public class ImagePipeline {
 //        FileSplit test = new FileSplit(testData, NativeImageLoader.ALLOWED_FORMATS, ranNumGen);
 
         //creates label
+
+
         JsonPathLabelGenerator label = new JsonPathLabelGenerator();
 //        ParentPathLabelGenerator label = new ParentPathLabelGenerator();
-
+//        System.out.println("console output");
         //rescale, converts, and labels images
 //        ImageRecordReader recordReader = new ImageRecordReader(height, width, channels, label);
         JsonImageRecordReader recordReader = new JsonImageRecordReader(height, width, channels, label);

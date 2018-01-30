@@ -14,7 +14,7 @@ import java.util.*;
 public class JsonImageRecordReader extends BaseImageRecordReader {
 
     public JsonImageRecordReader(int height, int width, int channels, PathLabelGenerator labelGenerator){
-        super();
+        super(height, width, channels, labelGenerator);
     }
 
     @Override
@@ -25,11 +25,13 @@ public class JsonImageRecordReader extends BaseImageRecordReader {
         inputSplit = split;
         URI[] locations = split.locations();
         if (locations != null && locations.length >= 1) {
-            if (appendLabel && labelGenerator != null && labelGenerator.inferLabelClasses()) {
+            if (appendLabel && labelGenerator != null) {
+//                if (appendLabel && labelGenerator != null && labelGenerator.inferLabelClasses()) {
                 Set<String> labelsSet = new HashSet<>();
                 for (URI location : locations) {
+//                    System.out.print(location + "/n"); output image paths
                     File imgFile = new File(location);
-                    File parentDir = imgFile.getParentFile();
+//                    File parentDir = imgFile.getParentFile();
                     String name = labelGenerator.getLabelForPath(location).toString();
                     labelsSet.add(name);
                     if (pattern != null) {

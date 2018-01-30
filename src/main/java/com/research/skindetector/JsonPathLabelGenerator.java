@@ -21,7 +21,7 @@ public class JsonPathLabelGenerator implements PathLabelGenerator {
     }
 
     public Writable getLabelForPath(URI uri){
-        return null;
+        return JsonExtraction(uri);
     }
 //
 //    @Override
@@ -34,7 +34,12 @@ public class JsonPathLabelGenerator implements PathLabelGenerator {
         return true;
     }
 
-    public Writable JsonExtraction(String path){
+    /**
+     *
+     * @param path  the path to the file being read
+     * @return status of either benign or malignant as a Text
+     */
+    private Writable JsonExtraction(String path){
        try {
             JsonReader jsonReader = Json.createReader(new FileReader(path)); //path is file name
             JsonObject json = jsonReader.readObject();
@@ -45,9 +50,11 @@ public class JsonPathLabelGenerator implements PathLabelGenerator {
        catch (Exception e){ e.printStackTrace();}
        return null;
     }
+
+    //same as before but with URI
 //    public Writable JsonExtraction(URI uri){
 //        try {
-//            JsonReader jsonReader = Json.createReader(new File(uri)); //path is file name
+//            JsonReader jsonReader = Json.createReader(new FileReader((uri).toString())); //path is file name
 //            JsonObject json = jsonReader.readObject();
 //            return new Text(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant"));
 //        }
