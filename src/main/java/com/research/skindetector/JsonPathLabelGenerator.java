@@ -35,12 +35,15 @@ public class JsonPathLabelGenerator implements PathLabelGenerator {
     @Override
     public Writable getLabelForPath(String JpgPath) {
 //        System.out.println(getFileExtension(JpgPath));
+//        System.out.println(System.getProperty("user.dir"));
         String JsonPath = renameFileExtension(JpgPath, "json");
         System.out.println(JsonPath);
         try {
+//            JsonReader jsonReader = Json.createReader(new FileReader(JsonPath)); //path is file name
             JsonReader jsonReader = Json.createReader(new FileReader(JsonPath)); //path is file name
             JsonObject json = jsonReader.readObject();
-            return new Text(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant"));
+            System.out.println(new Text(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant")));
+//            return new Text(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant"));
         } catch (FileNotFoundException e){ e.printStackTrace();}
        catch (IOException e){ e.printStackTrace();}
        catch (Exception e){ e.printStackTrace();}
@@ -49,7 +52,7 @@ public class JsonPathLabelGenerator implements PathLabelGenerator {
 
     @Override
     public Writable getLabelForPath(URI uri){
-        return getLabelForPath(new File(uri).getName().toString());
+        return getLabelForPath(new File(uri).toString()); //remove getName() for absolute path
     }
 
     public static String renameFileExtension
