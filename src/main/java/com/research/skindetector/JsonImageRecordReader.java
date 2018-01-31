@@ -29,7 +29,7 @@ public class JsonImageRecordReader extends BaseImageRecordReader {
 //                if (appendLabel && labelGenerator != null && labelGenerator.inferLabelClasses()) {
                 Set<String> labelsSet = new HashSet<>();
                 for (URI location : locations) {
-//                    System.out.print(location + "/n"); output image paths
+//                    System.out.print(location + "/n"); KEEP FOR DEBUGGING
                     File imgFile = new File(location);
 //                    File parentDir = imgFile.getParentFile();
                     String name = labelGenerator.getLabelForPath(location).toString();

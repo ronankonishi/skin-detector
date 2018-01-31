@@ -76,11 +76,11 @@ public class ImagePipeline {
         scaler.fit(dataIter);
         dataIter.setPreProcessor(scaler);
 
-        for (int i = 0; i < 3; i++){
-            DataSet ds = dataIter.next();
-            System.out.println(ds);
-            System.out.println(dataIter.getLabels());
-        }
+//        for (int i = 0; i < 3; i++){
+//            DataSet ds = dataIter.next();
+//            System.out.println(ds);
+//            System.out.println(dataIter.getLabels());
+//        }
 
 // Build Our Neural Network
 
