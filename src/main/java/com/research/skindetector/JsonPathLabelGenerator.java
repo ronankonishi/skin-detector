@@ -36,11 +36,12 @@ public class JsonPathLabelGenerator implements PathLabelGenerator {
     public Writable getLabelForPath(String JpgPath) {
 //        System.out.println(getFileExtension(JpgPath));
 //        System.out.println(System.getProperty("user.dir"));
+//        String file = "C:\\Users\\Ronan\\ISIC-images\\ISIC-images\\UDA-1\\ISIC_0000000.json";
         String JsonPath = renameFileExtension(JpgPath, "json");
         System.out.println(JsonPath);
         try {
-//            JsonReader jsonReader = Json.createReader(new FileReader(JsonPath)); //path is file name
             JsonReader jsonReader = Json.createReader(new FileReader(JsonPath)); //path is file name
+//            JsonReader jsonReader = Json.createReader(new FileReader(file)); //path is file name
             JsonObject json = jsonReader.readObject();
             System.out.println(new Text(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant")));
 //            return new Text(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant"));
