@@ -31,7 +31,6 @@ public class JsonImageRecordReader extends BaseImageRecordReader {
                 for (URI location : locations) {
 //                    System.out.print(location + "/n"); KEEP FOR DEBUGGING
                     File imgFile = new File(location);
-//                    File parentDir = imgFile.getParentFile();
                     String name = labelGenerator.getLabelForPath(location).toString();
                     labelsSet.add(name);
                     if (pattern != null) {
@@ -55,8 +54,4 @@ public class JsonImageRecordReader extends BaseImageRecordReader {
         //To ensure consistent order for label assignment (irrespective of file iteration order), we want to sort the list of labels
         Collections.sort(labels);
     }
-
-
-
-
 }
