@@ -39,16 +39,15 @@ public class ImagePipeline {
 
     public static void main(String[] args) throws IOException {
         //Image Specifications
-        int height = 2;
-        int width = 2;
+        int height = 80; //px height
+        int width = 80; //px width
         int channels = 3; //RGB
         int rngseed = 11;
         Random ranNumGen = new Random(rngseed);
-        int batchSize = 1;
+        int batchSize = 128;
         int outputNum = 2;
-        int numEpochs = 1;
+        int numEpochs = 5;
 
-//        File testing = new File("/Users/Ronan/Desktop/Testing/");
         //Define File Paths
         File trainData = new File("/Users/Ronan/ISIC-images/ISIC-images/UDA-1");
 //        File testData = new File("/Users/Ronan/ISIC-images/ISIC-images/UDA-2");
@@ -57,14 +56,13 @@ public class ImagePipeline {
         FileSplit train = new FileSplit(trainData, NativeImageLoader.ALLOWED_FORMATS, ranNumGen);
 //        FileSplit test = new FileSplit(testData, NativeImageLoader.ALLOWED_FORMATS, ranNumGen);
 
-
         //gets labels
         JsonPathLabelGenerator label = new JsonPathLabelGenerator();
 
         //rescale, converts, and labels images
         JsonImageRecordReader recordReader = new JsonImageRecordReader(height, width, channels, label);
         recordReader.initialize(train);
-        recordReader.setListeners(new LogRecordListener());
+//        recordReader.setListeners(new LogRecordListener());
 
         DataSetIterator dataIter = new RecordReaderDataSetIterator(recordReader,batchSize,1,outputNum);
 
@@ -73,51 +71,54 @@ public class ImagePipeline {
         scaler.fit(dataIter);
         dataIter.setPreProcessor(scaler);
 
-        //TESTING, display 3 images from database (set batchsize to 1)
-        for (int i = 0; i < 3; i++){
-            DataSet ds = dataIter.next();
-            System.out.println(ds);
-            System.out.println(dataIter.getLabels());
-        }
+        //TESTING, display 3 images with labels from database(set batchsize to 1)
+//        for (int i = 0; i < 3; i++){
+//            DataSet ds = dataIter.next();
+//            System.out.println(ds);
+//            System.out.println(dataIter.getLabels());
+//        }
 
 // Build Our Neural Network
 //
-//        log.info("**** Build Model ****");
-//
-//        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-//                .seed(rngseed)
-//                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-//                .iterations(1)
-//                .learningRate(0.006)
-//                .updater(Updater.NESTEROVS)
-//                .regularization(true).l2(1e-4)
-//                .list()
-//                .layer(0, new DenseLayer.Builder()
-//                        .nIn(height * width)
-//                        .nOut(100)
-//                        .activation(Activation.RELU)
-//                        .weightInit(WeightInit.XAVIER)
-//                        .build())
-//                .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-//                        .nIn(100)
-//                        .nOut(outputNum)
-//                        .activation(Activation.SOFTMAX)
-//                        .weightInit(WeightInit.XAVIER)
-//                        .build())
-//                .pretrain(false).backprop(true)
-//                .setInputType(InputType.convolutional(height,width,channels))
-//                .build();
-//
-//        MultiLayerNetwork model = new MultiLayerNetwork(conf);
-//
-////        // The Score iteration Listener will log
-////        // output to show how well the network is training
-//        model.setListeners(new ScoreIterationListener(10));
-//
-//        log.info("*****TRAIN MODEL********");
-//        for(int i = 0; i < numEpochs; i++){
-//            model.fit(dataIter);
-//        }
+        log.info("**** Build Model ****");
+
+        int layer1 = 100;
+
+        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+                .seed(rngseed)
+                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+                .iterations(1)
+                .learningRate(0.006)
+                .updater(Updater.NESTEROVS)
+                .regularization(true).l2(1e-4)
+                .list()
+                .layer(0, new DenseLayer.Builder()
+                        .nIn(height*width*channels)
+                        .nOut(layer1)
+                        .activation(Activation.RELU)
+                        .weightInit(WeightInit.XAVIER)
+                        .build())
+                .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
+                        .nIn(layer1)
+                        .nOut(outputNum)
+                        .activation(Activation.SOFTMAX)
+                        .weightInit(WeightInit.XAVIER)
+                        .build())
+                .pretrain(false).backprop(true)
+                .setInputType(InputType.convolutional(height,width,channels))
+                .build();
+
+        MultiLayerNetwork model = new MultiLayerNetwork(conf);
+        model.init();
+
+//        // The Score iteration Listener will log
+//        // output to show how well the network is training
+        model.setListeners(new ScoreIterationListener(10));
+
+        log.info("*****TRAIN MODEL********");
+        for(int i = 0; i < numEpochs; i++){
+            model.fit(dataIter);
+        }
     }
 }
 
