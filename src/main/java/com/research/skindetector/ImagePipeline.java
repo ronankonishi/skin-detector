@@ -1,13 +1,8 @@
 package com.research.skindetector;
 
-import org.datavec.api.writable.IntWritable;
-import org.datavec.api.writable.Writable;
-import org.datavec.api.io.labels.PathLabelGenerator;
-import org.datavec.api.io.labels.ParentPathLabelGenerator;
 import org.datavec.api.records.listener.impl.LogRecordListener;
 import org.datavec.api.split.FileSplit;
 import org.datavec.image.loader.NativeImageLoader;
-import org.datavec.image.recordreader.ImageRecordReader;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -28,11 +23,9 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.preprocessor.DataNormalization;
 import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
-import org.nd4j.shade.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
@@ -51,38 +44,37 @@ public class ImagePipeline {
         int outputNum = 2;
         int numEpochs = 10;
 
-        //Define File Paths
+        //File Paths
         File trainData = new File("/Users/Ronan/ISIC-images/ISIC-images/UDA-1");
         File testData = new File("/Users/Ronan/ISIC-images/ISIC-images/UDA-2");
 
-        //create randomized data
+        //Create randomized data
         FileSplit train = new FileSplit(trainData, NativeImageLoader.ALLOWED_FORMATS, ranNumGen);
         FileSplit test = new FileSplit(testData, NativeImageLoader.ALLOWED_FORMATS, ranNumGen);
 
-        //gets labels
+        //Retreive data labels
         JsonPathLabelGenerator label = new JsonPathLabelGenerator();
 
-        //rescale, converts, and labels images
+        //Rescale, convert, and label images
         JsonImageRecordReader recordReader = new JsonImageRecordReader(height, width, channels, label);
         recordReader.initialize(train);
-//        recordReader.setListeners(new LogRecordListener());
+        recordReader.setListeners(new LogRecordListener());
 
         DataSetIterator dataIter = new RecordReaderDataSetIterator(recordReader,batchSize,1,outputNum);
 
-        //normalize pixel data
+        //Normalize pixel data
         DataNormalization scaler = new ImagePreProcessingScaler(0,1);
         scaler.fit(dataIter);
         dataIter.setPreProcessor(scaler);
 
-        //TESTING, display 3 images with labels from database(set batchsize to 1)
-//        for (int i = 0; i < 3; i++){
-//            DataSet ds = dataIter.next();
-//            System.out.println(ds);
-//            System.out.println(dataIter.getLabels());
-//        }
+        //FOR TESTING PURPOSES: display 3 images with labels from database(set batchsize to 1)
+        for (int i = 0; i < 3; i++){
+            DataSet ds = dataIter.next();
+            System.out.println(ds);
+            System.out.println(dataIter.getLabels());
+        }
 
-// Build Our Neural Network
-
+        //Build Neural Network
         log.info("**** Build Model ****");
 
         int layer1 = 100;
@@ -114,15 +106,16 @@ public class ImagePipeline {
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
 
-//        // The Score iteration Listener will log
-//        // output to show how well the network is training
+        //Displays how well neural network is training
         model.setListeners(new ScoreIterationListener(10));
 
+        //Train Neural Network
         log.info("*****TRAIN MODEL********");
         for(int i = 0; i < numEpochs; i++){
             model.fit(dataIter);
         }
 
+        //Save Neural Network
         log.info("*****SAVE TRAINED MODEL******");
         File saveLocation = new File("trained_model.zip");
 
@@ -131,23 +124,24 @@ public class ImagePipeline {
         ModelSerializer.writeModel(model,saveLocation,saveUpdater);
 
 
-//        log.info("*****EVALUATE MODEL*******");
-//        recordReader.reset();
-//
-//        recordReader.initialize(test);
-//        DataSetIterator testIter = new RecordReaderDataSetIterator(recordReader,batchSize,1,outputNum);
-//        scaler.fit(testIter);
-//        testIter.setPreProcessor(scaler);
-//
-//        Evaluation eval = new Evaluation(outputNum);
-//
-//        while(testIter.hasNext()){
-//            DataSet next = testIter.next();
-//            INDArray output = model.output(next.getFeatureMatrix());
-//            eval.eval(next.getLabels(),output);
-//        }
-//
-//        log.info(eval.stats());
+        //Evaluate Neural Network
+        log.info("*****EVALUATE MODEL*******");
+        recordReader.reset();
+
+        recordReader.initialize(test);
+        DataSetIterator testIter = new RecordReaderDataSetIterator(recordReader,batchSize,1,outputNum);
+        scaler.fit(testIter);
+        testIter.setPreProcessor(scaler);
+
+        Evaluation eval = new Evaluation(outputNum);
+
+        while(testIter.hasNext()){
+            DataSet next = testIter.next();
+            INDArray output = model.output(next.getFeatureMatrix());
+            eval.eval(next.getLabels(),output);
+        }
+
+        log.info(eval.stats());
 
     }
 }
