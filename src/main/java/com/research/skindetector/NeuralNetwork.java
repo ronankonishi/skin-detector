@@ -29,11 +29,11 @@ import java.io.IOException;
 import java.util.Random;
 
 /**
- * The Convolutional Neural Network Class.
+ * Convolutional Neural Network class that applies Supervised Learning.
  *
- * <P> This is the main utility that builds, trains, and evaluates the neural network.
+ * This is the main utility that builds, trains, and evaluates the neural network.
  * 
- * <P> Based on deeplearning4j open source library and tutorials.
+ * Based on deeplearning4j open source library and tutorials.
  *
  * @author Ronan Konishi
  * @version 1.0
@@ -52,7 +52,7 @@ public class NeuralNetwork {
     boolean evaluatingReady = false;
 
     /**
-     * Constructor.
+     * Constructor
      *
      * @param trainData Path to file with training data
      * @param testData Path to file with 
@@ -86,17 +86,18 @@ public class NeuralNetwork {
     }
 
     /**
-     * Builds a neural network with the given configuration.
-     * @param 
+     * Builds a neural network using gradient descent with regularization algorithm
+     *
+     * @param alpha The learning rate of the algorithm
      */
-    public void build() {
+    public void build(double alpha) {
         int layer1 = 100;
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(rngseed)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .iterations(1)
-                .learningRate(0.006)
+                .learningRate(0.006) //alpha
                 .updater(Updater.NESTEROVS)
                 .regularization(true).l2(1e-4)
                 .list()
@@ -120,6 +121,11 @@ public class NeuralNetwork {
         model.init();
     }
 
+    /**
+     * Trains the neural network with the training data.
+     *
+     * @param numEpochs Determines the number of times the model iterates through the training data set
+     */
     public void train(int numEpochs) throws IOException {
         //if trainingReady is true and evaluatingReady is false
         FileSplit train = new FileSplit(trainData, NativeImageLoader.ALLOWED_FORMATS, this.ranNumGen);
@@ -133,6 +139,11 @@ public class NeuralNetwork {
         }
     }
 
+    /**
+     * Evaluates the neural network by running the network through the testing data set.
+     *
+     * @returns eval 
+     */
     public Evaluation evaluate() throws IOException {
         //if trainingReady is false and evaluatingReady is true
         FileSplit test = new FileSplit(testData, NativeImageLoader.ALLOWED_FORMATS, ranNumGen);
@@ -148,6 +159,11 @@ public class NeuralNetwork {
         return eval;
     }
 
+    /**
+     * Creates a record record reader.
+     *
+     *
+     */
     private void recordReaderInit(FileSplit file) throws IOException {
 //        recordReader.reset();
         recordReader.initialize(file);
@@ -155,21 +171,31 @@ public class NeuralNetwork {
         normalizeData();
     }
 
+    /**
+     * Saves the trained neural network
+     *
+     * @param filepath The path and file to which the neural network should be save to
+     */
     public void saveBuild(String filepath) throws IOException {
         File saveLocation = new File(filepath);
         boolean saveUpdater = false; //want to enable retraining of data
         ModelSerializer.writeModel(model,saveLocation,saveUpdater);
     }
-
-    //FOR TESTING PURPOSES: display 3 images with labels from database(set batchsize to 1)
-    public void imageToLabelDisplay(){
-        for (int i = 0; i < 3; i++) {
+    
+    /**
+     * For testing purposes. Displays images with labels from a given database.
+     *
+     * @param numImages The number of images to display
+     */
+    public void imageToLabelDisplay(int numImages){
+        for (int i = 0; i < numImages; i++) {
             DataSet ds = iter.next();
             System.out.println(ds);
             System.out.println(iter.getLabels());
         }
     }
 
+    /** Normalizes the data to a value between 0 and 1 */
     private void normalizeData(){
         //Normalize pixel data
         scaler = new ImagePreProcessingScaler(0,1);
