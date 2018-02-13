@@ -19,7 +19,7 @@ import org.datavec.api.writable.Text;
 /**
  * JSON Path Label Generator
  *
- * Label generator for a given JPG image, extracted from a Json file
+ * Label generator for a given JPG image, extracted from a JSON file
  *
  * @author Ronan Konishi
  * @version 1.0
@@ -75,10 +75,12 @@ public class JsonPathLabelGenerator implements PathLabelGenerator {
      * @return The output file with new extension
      */
     private static String fileExtensionRename(String input, String newExtension) {
+        String oldExtension = getFileExtension(input);
+        
         if (oldExtension.equals("")) {
             return input + "." + newExtension;
         } else {
-            return input.replaceFirst(Pattern.quote("." + getFileExtension(input)) + "$", Matcher.quoteReplacement("." + newExtension));
+            return input.replaceFirst(Pattern.quote("." + oldExtension) + "$", Matcher.quoteReplacement("." + newExtension));
         }
     }
 

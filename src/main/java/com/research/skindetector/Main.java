@@ -48,7 +48,7 @@ public class Main {
         network.train(numEpochs);
 
         log.info("*****SAVE TRAINED MODEL******");
-        network.saveBuild("trained_model.zip);
+        network.saveBuild("trained_model.zip");
 
         log.info("*****EVALUATE MODEL*******");
         log.info(network.evaluate().stats());

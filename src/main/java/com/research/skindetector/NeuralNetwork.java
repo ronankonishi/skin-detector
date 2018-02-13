@@ -59,7 +59,7 @@ public class NeuralNetwork {
      * @param rngseed Integer that allows for constant random generated value
      * @param height The height of image in pixels
      * @param width The width of image in pixels
-     * @param channels The number of channels (e.g. 1 for grayscaled and 3 for RGB)
+     * @param channels The number of channels (e.g. 1 for gray scaled and 3 for RGB)
      * @param batchSize 
      * @param outputNum The number of nodes in the output layer
      */
@@ -142,7 +142,7 @@ public class NeuralNetwork {
     /**
      * Evaluates the neural network by running the network through the testing data set.
      *
-     * @returns eval 
+     * @returns eval The output of the evaluation
      */
     public Evaluation evaluate() throws IOException {
         //if trainingReady is false and evaluatingReady is true
@@ -160,9 +160,9 @@ public class NeuralNetwork {
     }
 
     /**
-     * Creates a record record reader.
+     * Creates a record reader.
      *
-     *
+     * @param file Name of path to the database wanting to be initialized
      */
     private void recordReaderInit(FileSplit file) throws IOException {
 //        recordReader.reset();
