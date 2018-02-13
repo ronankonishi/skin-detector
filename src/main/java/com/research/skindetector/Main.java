@@ -34,6 +34,7 @@ public class Main {
         int batchSize = 500;
         int outputNum = 2;
         int numEpochs = 10;
+        double alpha = 0.006;
 
         File trainData = new File("/Users/Ronan/ISIC-images/ISIC-images/UDA-1");
         File testData = new File("/Users/Ronan/ISIC-images/ISIC-images/UDA-2");
@@ -41,13 +42,13 @@ public class Main {
         NeuralNetwork network = new NeuralNetwork(trainData, testData, rngseed, height, width, channels, batchSize, outputNum);
 
         log.info("**** Build Model ****");
-        network.build();
+        network.build(alpha);
 
         log.info("*****TRAIN MODEL********");
         network.train(numEpochs);
 
         log.info("*****SAVE TRAINED MODEL******");
-        network.saveBuild();
+        network.saveBuild("trained_model.zip);
 
         log.info("*****EVALUATE MODEL*******");
         log.info(network.evaluate().stats());
