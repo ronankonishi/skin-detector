@@ -28,6 +28,17 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 
+/**
+ * The Convolutional Neural Network Class.
+ *
+ * <P> This is the main utility that builds, trains, and evaluates the neural network.
+ * 
+ * <P> Based on deeplearning4j open source library and tutorials.
+ *
+ * @author Ronan Konishi
+ * @version 1.0
+ *
+ */
 public class NeuralNetwork {
 
     File trainData, testData;
@@ -40,6 +51,18 @@ public class NeuralNetwork {
     boolean testingReady = false;
     boolean evaluatingReady = false;
 
+    /**
+     * Constructor.
+     *
+     * @param trainData Path to file with training data
+     * @param testData Path to file with 
+     * @param rngseed Integer that allows for constant random generated value
+     * @param height The height of image in pixels
+     * @param width The width of image in pixels
+     * @param channels The number of channels (e.g. 1 for grayscaled and 3 for RGB)
+     * @param batchSize 
+     * @param outputNum The number of nodes in the output layer
+     */
     public NeuralNetwork(File trainData, File testData, int rngseed, int height, int width, int channels, int batchSize, int outputNum) throws IOException {
         this.trainData = trainData;
         this.testData = testData;
@@ -62,6 +85,10 @@ public class NeuralNetwork {
 //        testingReady = false;
     }
 
+    /**
+     * Builds a neural network with the given configuration.
+     * @param 
+     */
     public void build() {
         int layer1 = 100;
 
@@ -93,7 +120,6 @@ public class NeuralNetwork {
         model.init();
     }
 
-//PUT CHECKS FOR TRAIN TO NOT OVERLAP
     public void train(int numEpochs) throws IOException {
         //if trainingReady is true and evaluatingReady is false
         FileSplit train = new FileSplit(trainData, NativeImageLoader.ALLOWED_FORMATS, this.ranNumGen);
@@ -129,8 +155,8 @@ public class NeuralNetwork {
         normalizeData();
     }
 
-    public void saveBuild() throws IOException {
-        File saveLocation = new File("trained_model.zip");
+    public void saveBuild(String filepath) throws IOException {
+        File saveLocation = new File(filepath);
         boolean saveUpdater = false; //want to enable retraining of data
         ModelSerializer.writeModel(model,saveLocation,saveUpdater);
     }
