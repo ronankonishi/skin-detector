@@ -15,15 +15,33 @@ import java.net.URI;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.datavec.api.writable.Text;
+
+/**
+ * JSON Path Label Generator
+ *
+ * Label generator for a given JPG image, extracted from a Json file
+ *
+ * @author Ronan Konishi
+ * @version 1.0
+ */
 public class JsonPathLabelGenerator implements PathLabelGenerator {
 
+    /** Constructor */
     public JsonPathLabelGenerator() {}
 
+    /**
+     * Gets the JSON path for a given file JPG image.
+     * Note that the comments make testing and debugging the method much simpler.
+     *
+     * @param JpgPath The path of the JPG image
+     * @return benign or malignant The status of the given input JPG image written in the JSON file
+     * @return null Returns null if the method fails to create a JSON Reader object
+     */
     @Override
     public Writable getLabelForPath(String JpgPath) {
 //        System.out.println(System.getProperty("user.dir")); // read working directory
 //        String file = "C:\\Users\\Ronan\\ISIC-images\\ISIC-images\\UDA-1\\ISIC_XXXXXXX.json"; //temporary read file
-        String JsonPath = renameFileExtension(JpgPath, "json");
+        String JsonPath = fileExtensionRename(JpgPath, "json");
 //        System.out.println(JsonPath); //Current Json Path print
         try {
             JsonReader jsonReader = Json.createReader(new FileReader(JsonPath)); //Jsonath is absolute file path
@@ -37,33 +55,50 @@ public class JsonPathLabelGenerator implements PathLabelGenerator {
        return null;
     }
 
+    /**
+     * Gets the JSON path for a given file JPG image.
+     * 
+     * @param uri The path of the JPG image
+     * @return benign or malignant The status of the given input JPG image written in the JSON file
+     * @return null Returns null if the method fails to create a JSON Reader object
+     */
     @Override
     public Writable getLabelForPath(URI uri){
         return getLabelForPath(new File(uri).toString()); //remove getName() for absolute path
     }
 
-    private static String renameFileExtension(String source, String newExtension) {
-        String target;
-        String currentExtension = getFileExtension(source);
-
-        if (currentExtension.equals("")) {
-            target = source + "." + newExtension;
+    /**
+     * Renames the given input file extension.
+     *
+     * @param input File to rename
+     * @param newExtension The new extension to give to file
+     * @return The output file with new extension
+     */
+    private static String fileExtensionRename(String input, String newExtension) {
+        if (oldExtension.equals("")) {
+            return input + "." + newExtension;
         } else {
-            target = source.replaceFirst(Pattern.quote("." + currentExtension) + "$", Matcher.quoteReplacement("." + newExtension));
+            return input.replaceFirst(Pattern.quote("." + getFileExtension(input)) + "$", Matcher.quoteReplacement("." + newExtension));
         }
-        return target;
     }
 
-    private static String getFileExtension(String f) {
-        String ext = "";
-        int i = f.lastIndexOf('.');
+    /**
+     * Gets the file extention.
+     * @param input File to get extension from
+     */
+    private static String getFileExtension(String input) {
+        int i = input.lastIndexOf('.');
 
-        if (i > 0 &&  i < f.length() - 1) {
-            ext = f.substring(i + 1);
+        if (i > 0 &&  i < input.length() - 1) {
+            return input.substring(i + 1);
+        } else {
+            return "";   
         }
-        return ext;
     }
 
+    /**
+     * Only compatible with newer versions of deeplearning4j.
+     */
 //    @Override
 //    public boolean inferLabelClasses(){
 //        return true;
