@@ -15,7 +15,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 
+/**
+ * The heart of the program that calls everything that needs to run.
+ *
+ * @author Ronan Konishi
+ * @version 1.0
+ */
 public class Main {
+    
     private static Logger log = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) throws IOException {
@@ -44,6 +51,5 @@ public class Main {
 
         log.info("*****EVALUATE MODEL*******");
         log.info(network.evaluate().stats());
-
     }
 }
