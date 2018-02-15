@@ -25,7 +25,27 @@ import java.util.Random;
  */
 
 public class DataDownloader {
+//   public static final String DATA_URL = "http://github.com/RonanK687/ISIC_Dataset/raw/master/ISIC_Dataset.tar.gz";
+
+//   public static final String DATA_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "ISIC_Dataset/");
+
+  public DataDownloader(String DATA_URL, String DATA_PATH){
+    this.DATA_URL = DATA_URL;
+    this.DATA_Path = DATA_PATH;
+  }
   
+  private static void download() {
+    File directory = new File(DATA_PATH);
+    if(!directory.exists()){
+      directory.mkdir();
+    }
+    
+    File archiveFile = new File(archizePath);
+    
+    
+    
+  }
+
   
   
 }
