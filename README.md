@@ -18,14 +18,14 @@ Currently only tested on Windows Operating System
 
 Currently only tested on IntelliJ IDEA IDE
 
-### Prerequisites
+## Prerequisites
 
 * [Java](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) - Programming Language
 * [IntelliJ IDEA](https://www.jetbrains.com/idea/download/#section=windows) - IDE
 * [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) - Allows for project download
 * [Maven](https://maven.apache.org/download.cgi) - Dependency Management
 
-### Installing 
+## Installing 
 
 Clone this repository by changing directory to that of the desired download location and running the following command: 
 ```
@@ -48,6 +48,3 @@ This project is licensed under the Apache License 2.0 - see [LICENSE](LICENSE) f
 
 * Special thanks to The International Skin Imaging Collaboration (ISIC) for the open source database of skin cancer moles.
 * Special thanks to the deeplearning4j team for their open source [artificial intelligence library](https://github.com/deeplearning4j).
-
-
-
