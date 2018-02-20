@@ -4,19 +4,15 @@ At this current date, studies indicate promising results when applying artificia
 
 ## Current Status
 
-The program in its basic state is complete.
+* The program in its basic state is complete.
+* The next step is to perform tests and optimize the neural network.
+* I also plan to implement a script that automatically downloads the database of images used for training and testing the network. (isic-archive.com).
+* I also plan to implement an automatic file distibutor, which will take the data from a single database and randomly sort the data into a training and testing file.
+* Smartphone compatibiltiy is still under development. I plan to make it Android compatible first, and later expand to other operating systems.
 
-The next step is to perform tests and optimize the neural network.
-
-I also plan to implement a script that automatically downloads the database of images used for training and testing the network. (isic-archive.com).
-
-I also plan to implement an automatic file distibutor, which will take the data from a single database and randomly sort the data into a training and testing file.
-
-Smartphone compatibiltiy is still under development. I plan to make it Android compatible first, and later expand to other operating systems.
-
-Currently only tested on Windows Operating System
-
-Currently only tested on IntelliJ IDEA IDE
+## Compatibility
+* Currently only tested on Windows Operating System
+* Currently only tested on IntelliJ IDEA IDE
 
 ## Prerequisites
 
@@ -27,14 +23,14 @@ Currently only tested on IntelliJ IDEA IDE
 
 ## Installing 
 
-Clone this repository by changing directory to that of the desired download location and running the following command: 
+1. Use the command line to enter the following:
 ```
 git clone https://github.com/RonanK687/skin-detector.git
+cd skin-detector
+mvn clean install
 ```
 
-## Contributing
-
-Please read [CONTRIBUTING.md]() for details on the code of conduct and the process for submitting pull requests.
+2. Select Maven when building in IntelliJ and select SDK as jdk
 
 ## Author
 
