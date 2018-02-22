@@ -23,6 +23,8 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.preprocessor.DataNormalization;
 import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,57 +42,120 @@ import java.util.Random;
  *
  */
 public class NeuralNetwork {
-
+    private static Logger log = LoggerFactory.getLogger(Main.class);
     File trainData, testData;
     int rngseed, height, width, channels, batchSize, outputNum;
+    String netPath;
     Random ranNumGen;
     MultiLayerNetwork model;
     JsonImageRecordReader recordReader;
     DataNormalization scaler;
     DataSetIterator iter;
-    boolean testingReady = false;
-    boolean evaluatingReady = false;
+
 
     /**
-     * Constructor
+     * Constructor for non distinguished training and testing data.
+     * Also for if need to create a neural network.
      *
-     * @param trainData Path to file with training data
-     * @param testData Path to file with 
+     * @param mixedData Path to file with mixed data
      * @param rngseed Integer that allows for constant random generated value
      * @param height The height of image in pixels
      * @param width The width of image in pixels
      * @param channels The number of channels (e.g. 1 for gray scaled and 3 for RGB)
-     * @param batchSize 
+     * @param batchSize
+     * @param outputNum The number of nodes in the output layer
+     */
+    public NeuralNetwork(File mixedData, int rngseed, int height, int width, int channels, int batchSize, int outputNum) throws IOException {
+        this.trainData = trainData;
+        this.testData = testData;
+        init();
+        log.info("Building Neural Network from scratch...");
+        buildNet();
+    }
+
+    /**
+     * Constructor for non distinguished training and testing data.
+     * Also for if importing an already built neural network.
+     *
+     * @param mixedData Path to file with mixed data
+     * @param rngseed Integer that allows for constant random generated value
+     * @param height The height of image in pixels
+     * @param width The width of image in pixels
+     * @param channels The number of channels (e.g. 1 for gray scaled and 3 for RGB)
+     * @param batchSize
+     * @param outputNum The number of nodes in the output layer
+     * @param netPath The path from which the neural network is being imported
+     */
+    public NeuralNetwork(File mixedData, int rngseed, int height, int width, int channels, int batchSize, int outputNum, String netPath) throws IOException {
+        this.trainData = trainData;
+        this.testData = testData;
+        init();
+        log.info("Building Neural Network from import...");
+        loadNet(netPath);
+    }
+
+    /**
+     * Constructor for preemptively defined training and testing data.
+     * Also for if need to create a neural network.
+     *
+     * @param trainData Path to file with training data
+     * @param testData Path to file with
+     * @param rngseed Integer that allows for constant random generated value
+     * @param height The height of image in pixels
+     * @param width The width of image in pixels
+     * @param channels The number of channels (e.g. 1 for gray scaled and 3 for RGB)
+     * @param batchSize
      * @param outputNum The number of nodes in the output layer
      */
     public NeuralNetwork(File trainData, File testData, int rngseed, int height, int width, int channels, int batchSize, int outputNum) throws IOException {
         this.trainData = trainData;
         this.testData = testData;
+        init();
+        log.info("Building Neural Network from scratch...");
+        buildNet();
+    }
+
+    /**
+     * Constructor for preemptively defined training and testing data.
+     * Also for if importing an already built neural network.
+     *
+     * @param trainData Path to file with training data
+     * @param testData Path to file with
+     * @param rngseed Integer that allows for constant random generated value
+     * @param height The height of image in pixels
+     * @param width The width of image in pixels
+     * @param channels The number of channels (e.g. 1 for gray scaled and 3 for RGB)
+     * @param batchSize
+     * @param outputNum The number of nodes in the output layer
+     * @param netPath The path from which the neural network is being imported
+     */
+    public NeuralNetwork(File trainData, File testData, int rngseed, int height, int width, int channels, int batchSize, int outputNum, String netPath) throws IOException {
+        this.trainData = trainData;
+        this.testData = testData;
+        init();
+        log.info("Building Neural Network from import...");
+        loadNet(netPath);
+    }
+
+    private void init(){
         this.rngseed = rngseed;
         this.height = height;
         this.width = width;
         this.channels = channels;
         this.batchSize = batchSize;
         this.outputNum = outputNum;
-
+        this.netPath = netPath;
         ranNumGen = new Random(rngseed);
 
         JsonPathLabelGenerator label = new JsonPathLabelGenerator();
-
-        //Rescale, convert, and label images
         recordReader = new JsonImageRecordReader(height, width, channels, label);
 //        recordReader.setListeners(new LogRecordListener());
-
-//        trainingReady = true;
-//        testingReady = false;
     }
 
     /**
-     * Builds a neural network using gradient descent with regularization algorithm
-     *
-     * @param alpha The learning rate of the algorithm
+     * Builds a neural network using gradient descent with regularization algorithm.
      */
-    public void build(double alpha) {
+    private void buildNet() {
         int layer1 = 100;
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
@@ -119,6 +184,11 @@ public class NeuralNetwork {
 
         model = new MultiLayerNetwork(conf);
         model.init();
+    }
+
+    private void loadNet(String NetPath) throws IOException {
+        File locationToSave = new File(NetPath);
+        model = ModelSerializer.restoreMultiLayerNetwork(locationToSave);
     }
 
     /**

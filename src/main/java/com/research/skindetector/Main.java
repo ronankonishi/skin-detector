@@ -33,22 +33,22 @@ public class Main {
         int rngseed = 11;
         int batchSize = 500;
         int outputNum = 2;
-        int numEpochs = 10;
-        double alpha = 0.006;
+        int numEpochs = 1; //number of iterations through entire dataset
 
-        File trainData = new File("/Users/Ronan/ISIC-images/ISIC-images/UDA-1");
-        File testData = new File("/Users/Ronan/ISIC-images/ISIC-images/UDA-2");
+//        File trainData = new File("/Users/Ronan/ISIC-images/ISIC-images/UDA-1");
+//        File testData = new File("/Users/Ronan/ISIC-images/ISIC-images/UDA-2");
 
-        NeuralNetwork network = new NeuralNetwork(trainData, testData, rngseed, height, width, channels, batchSize, outputNum);
+        DataDownloader dataSet = new DataDownloader();
+        dataSet.download();
+        File UnpackagedISICData = new File(dataSet.getDataPath()); //unsure still NEEDS TESTING
 
-        log.info("**** Build Model ****");
-        network.build(alpha);
+        NeuralNetwork network = new NeuralNetwork(UnpackagedISICData, rngseed, height, width, channels, batchSize, outputNum);
 
         log.info("*****TRAIN MODEL********");
         network.train(numEpochs);
 
-        log.info("*****SAVE TRAINED MODEL******");
-        network.saveBuild("trained_model.zip");
+//        log.info("*****SAVE TRAINED MODEL******");
+//        network.saveBuild("trained_model.zip");
 
         log.info("*****EVALUATE MODEL*******");
         log.info(network.evaluate().stats());
