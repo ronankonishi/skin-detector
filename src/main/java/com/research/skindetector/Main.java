@@ -38,11 +38,15 @@ public class Main {
 //        File trainData = new File("/Users/Ronan/ISIC-images/ISIC-images/UDA-1");
 //        File testData = new File("/Users/Ronan/ISIC-images/ISIC-images/UDA-2");
 
-        DataDownloader dataSet = new DataDownloader();
-        dataSet.download();
-        File UnpackagedISICData = new File(dataSet.getDataPath()); //unsure still NEEDS TESTING
+//        DataDownloader dataSet = new DataDownloader();
+//        dataSet.download();
+//        File UnpackagedISICData = new File(dataSet.getDataPath()); //unsure still NEEDS TESTING
+//
+//        NeuralNetwork network = new NeuralNetwork(UnpackagedISICData, rngseed, height, width, channels, batchSize, outputNum);
 
-        NeuralNetwork network = new NeuralNetwork(UnpackagedISICData, rngseed, height, width, channels, batchSize, outputNum);
+        File mixedData = new File("/Users/Ronan/Desktop/ISIC_Dataset");
+
+        NeuralNetwork network = new NeuralNetwork(mixedData, rngseed, height, width, channels, batchSize, outputNum);
 
         log.info("*****TRAIN MODEL********");
         network.train(numEpochs);

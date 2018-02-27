@@ -1,6 +1,5 @@
 package com.research.skindetector;
 
-import org.datavec.api.records.listener.impl.LogRecordListener;
 import org.datavec.api.split.FileSplit;
 import org.datavec.image.loader.NativeImageLoader;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
@@ -14,7 +13,6 @@ import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
-import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -28,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Random;
 
 /**
@@ -55,7 +54,7 @@ public class NeuralNetwork {
 
     /**
      * Constructor for non distinguished training and testing data.
-     * Also for if need to create a neural network.
+     * Also for if needing to create a neural network.
      *
      * @param mixedData Path to file with mixed data
      * @param rngseed Integer that allows for constant random generated value
@@ -65,10 +64,9 @@ public class NeuralNetwork {
      * @param batchSize
      * @param outputNum The number of nodes in the output layer
      */
-    public NeuralNetwork(File mixedData, int rngseed, int height, int width, int channels, int batchSize, int outputNum) throws IOException {
-        this.trainData = trainData;
-        this.testData = testData;
+    public NeuralNetwork(File mixedData, File futureTrainData, File futureTestData, int rngseed, int height, int width, int channels, int batchSize, int outputNum) throws IOException {
         init();
+        dataSplitter(mixedData, futureTrainData, futureTestData);
         log.info("Building Neural Network from scratch...");
         buildNet();
     }
@@ -86,17 +84,17 @@ public class NeuralNetwork {
      * @param outputNum The number of nodes in the output layer
      * @param netPath The path from which the neural network is being imported
      */
-    public NeuralNetwork(File mixedData, int rngseed, int height, int width, int channels, int batchSize, int outputNum, String netPath) throws IOException {
-        this.trainData = trainData;
-        this.testData = testData;
+    public NeuralNetwork(File mixedData, File futureTrainData, File futureTestData, int rngseed, int height, int width, int channels, int batchSize, int outputNum, String netPath) throws IOException {
         init();
+//        removeLeadingZeros(mixedData);
+        dataSplitter(mixedData, futureTrainData, futureTestData);
         log.info("Building Neural Network from import...");
         loadNet(netPath);
     }
 
     /**
      * Constructor for preemptively defined training and testing data.
-     * Also for if need to create a neural network.
+     * Also for if needing to create a neural network.
      *
      * @param trainData Path to file with training data
      * @param testData Path to file with
@@ -186,11 +184,6 @@ public class NeuralNetwork {
         model.init();
     }
 
-    private void loadNet(String NetPath) throws IOException {
-        File locationToSave = new File(NetPath);
-        model = ModelSerializer.restoreMultiLayerNetwork(locationToSave);
-    }
-
     /**
      * Trains the neural network with the training data.
      *
@@ -230,18 +223,6 @@ public class NeuralNetwork {
     }
 
     /**
-     * Creates a record reader.
-     *
-     * @param file Name of path to the database wanting to be initialized
-     */
-    private void recordReaderInit(FileSplit file) throws IOException {
-//        recordReader.reset();
-        recordReader.initialize(file);
-        iter = new RecordReaderDataSetIterator(recordReader,batchSize,1,outputNum);
-        normalizeData();
-    }
-
-    /**
      * Saves the trained neural network
      *
      * @param filepath The path and file to which the neural network should be save to
@@ -263,6 +244,64 @@ public class NeuralNetwork {
             System.out.println(ds);
             System.out.println(iter.getLabels());
         }
+    }
+
+    //Note that mixedData must not have leading 0's !
+    private void dataSplitter(File mixedData, File futureTrainData, File futureTestData) throws IOException {
+        this.trainData = futureTrainData;
+        this.testData = futureTestData;
+
+//        removeLeadingZeros(mixedData.getName());
+
+        int mixedDataLength = mixedData.listFiles().length/2;
+        for (int i = 0; i < mixedDataLength; i++) {
+            double random = Math.random();
+            if (random > 0.25) {
+                File trainJPG = new File (trainData.toString() + "/ISIC_" + i + ".jpg");
+                File tempJPG = new File(mixedData.toString() + "/ISIC_" + i + ".jpg");
+                Files.move(tempJPG.toPath(), trainJPG.toPath());
+
+                File trainJSON = new File (trainData.toString() + "/ISIC_" + i + ".json");
+                File tempJSON = new File(mixedData.toString() + "/ISIC_" + i + ".json");
+                Files.move(tempJSON.toPath(), trainJSON.toPath());
+            } else {
+                File testJPG = new File (testData.toString() + "/ISIC_" + i + ".jpg");
+                File tempJPG = new File(mixedData.toString() + "/ISIC_" + i + ".jpg");
+                Files.move(tempJPG.toPath(), testJPG.toPath());
+
+                File testJSON = new File (testData.toString() + "/ISIC_" + i + ".json");
+                File tempJSON = new File(mixedData.toString() + "/ISIC_" + i + ".json");
+                Files.move(tempJSON.toPath(), testJSON.toPath());
+            }
+        }
+//        this.trainData = new File(trainDataPath);
+//        for(int i=0; i < mixedData.listFiles().length; i++){
+//            File tempFile = new File(mixedData.toString() + "ISIC_" + i);
+//            Files.move(tempFile.toPath(),trainData.toPath());
+//        }
+//        this.trainData = trainData;
+//        this.testData = testData;
+    }
+
+    private void loadNet(String NetPath) throws IOException {
+        File locationToSave = new File(NetPath);
+        model = ModelSerializer.restoreMultiLayerNetwork(locationToSave);
+    }
+
+    /**
+     * Creates a record reader.
+     *
+     * @param file Name of path to the database wanting to be initialized
+     */
+    private void recordReaderInit(FileSplit file) throws IOException {
+//        recordReader.reset();
+        recordReader.initialize(file);
+        iter = new RecordReaderDataSetIterator(recordReader,batchSize,1,outputNum);
+        normalizeData();
+    }
+
+    private String removeLeadingZeros(String name){
+        return name.replaceFirst("^0+(?!$)", "");
     }
 
     /** Normalizes the data to a value between 0 and 1 */
