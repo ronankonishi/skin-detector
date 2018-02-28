@@ -64,9 +64,11 @@ public class NeuralNetwork {
      * @param batchSize
      * @param outputNum The number of nodes in the output layer
      */
-    public NeuralNetwork(File mixedData, File futureTrainData, File futureTestData, int rngseed, int height, int width, int channels, int batchSize, int outputNum) throws IOException {
+    public NeuralNetwork(File mixedData, File trainData, File testData, int rngseed, int height, int width, int channels, int batchSize, int outputNum) throws IOException {
+        this.trainData = trainData;
+        this.testData = testData;
         init();
-        dataSplitter(mixedData, futureTrainData, futureTestData);
+        dataSplitter(mixedData, trainData, testData);
         log.info("Building Neural Network from scratch...");
         buildNet();
     }
@@ -84,10 +86,11 @@ public class NeuralNetwork {
      * @param outputNum The number of nodes in the output layer
      * @param netPath The path from which the neural network is being imported
      */
-    public NeuralNetwork(File mixedData, File futureTrainData, File futureTestData, int rngseed, int height, int width, int channels, int batchSize, int outputNum, String netPath) throws IOException {
+    public NeuralNetwork(File mixedData, File trainData, File testData, int rngseed, int height, int width, int channels, int batchSize, int outputNum, String netPath) throws IOException {
+        this.trainData = trainData;
+        this.testData = testData;
         init();
-//        removeLeadingZeros(mixedData);
-        dataSplitter(mixedData, futureTrainData, futureTestData);
+        dataSplitter(mixedData, trainData, testData);
         log.info("Building Neural Network from import...");
         loadNet(netPath);
     }
@@ -246,34 +249,50 @@ public class NeuralNetwork {
         }
     }
 
-    //Note that mixedData must not have leading 0's !
-    private void dataSplitter(File mixedData, File futureTrainData, File futureTestData) throws IOException {
-        this.trainData = futureTrainData;
-        this.testData = futureTestData;
+    private void dataSplitter(File mixedDataset, File trainData, File testData) throws IOException {
+        this.trainData = trainData;
+        this.testData = testData;
 
-//        removeLeadingZeros(mixedData.getName());
-
-        int mixedDataLength = mixedData.listFiles().length/2;
-        for (int i = 0; i < mixedDataLength; i++) {
+//        File[] mixedData = new File("C:/Users/ronan/Desktop/test/mixedData").listFiles();
+        File[] mixedData = mixedDataset.listFiles();
+        String temp1, temp2;
+        for(int i = 0; i < mixedData.length/2; i++){
             double random = Math.random();
+            temp1 = mixedData[i*2].toString();
+            temp2 = mixedData[i*2+1].toString();
+//            System.out.println(new File("C:/Users/ronan/Desktop/test/trainData/" + temp1.substring(temp1.lastIndexOf('\\')+1)).toPath());
             if (random > 0.25) {
-                File trainJPG = new File (trainData.toString() + "/ISIC_" + i + ".jpg");
-                File tempJPG = new File(mixedData.toString() + "/ISIC_" + i + ".jpg");
-                Files.move(tempJPG.toPath(), trainJPG.toPath());
-
-                File trainJSON = new File (trainData.toString() + "/ISIC_" + i + ".json");
-                File tempJSON = new File(mixedData.toString() + "/ISIC_" + i + ".json");
-                Files.move(tempJSON.toPath(), trainJSON.toPath());
+                Files.move(mixedData[i*2].toPath(), new File("C:/Users/ronan/Desktop/test/trainData/" + temp1.substring(temp1.lastIndexOf('\\')+1)).toPath());
+                Files.move(mixedData[i*2+1].toPath(), new File("C:/Users/ronan/Desktop/test/trainData/" + temp2.substring(temp2.lastIndexOf('\\')+1)).toPath());
             } else {
-                File testJPG = new File (testData.toString() + "/ISIC_" + i + ".jpg");
-                File tempJPG = new File(mixedData.toString() + "/ISIC_" + i + ".jpg");
-                Files.move(tempJPG.toPath(), testJPG.toPath());
-
-                File testJSON = new File (testData.toString() + "/ISIC_" + i + ".json");
-                File tempJSON = new File(mixedData.toString() + "/ISIC_" + i + ".json");
-                Files.move(tempJSON.toPath(), testJSON.toPath());
+                Files.move(mixedData[i*2].toPath(), new File("C:/Users/ronan/Desktop/test/testData/" + temp1.substring(temp1.lastIndexOf('\\')+1)).toPath());
+                Files.move(mixedData[i*2+1].toPath(), new File("C:/Users/ronan/Desktop/test/testData/" + temp2.substring(temp2.lastIndexOf('\\')+1)).toPath());
             }
         }
+
+//        removeLeadingZeros(mixedData.getName());
+//
+//        int mixedDataLength = mixedData.listFiles().length/2;
+//        for (int i = 0; i < mixedDataLength; i++) {
+//            double random = Math.random();
+//            if (random > 0.25) {
+//                File trainJPG = new File (trainData.toString() + "/ISIC_" + i + ".jpg");
+//                File tempJPG = new File(mixedData.toString() + "/ISIC_" + i + ".jpg");
+//                Files.move(tempJPG.toPath(), trainJPG.toPath());
+//
+//                File trainJSON = new File (trainData.toString() + "/ISIC_" + i + ".json");
+//                File tempJSON = new File(mixedData.toString() + "/ISIC_" + i + ".json");
+//                Files.move(tempJSON.toPath(), trainJSON.toPath());
+//            } else {
+//                File testJPG = new File (testData.toString() + "/ISIC_" + i + ".jpg");
+//                File tempJPG = new File(mixedData.toString() + "/ISIC_" + i + ".jpg");
+//                Files.move(tempJPG.toPath(), testJPG.toPath());
+//
+//                File testJSON = new File (testData.toString() + "/ISIC_" + i + ".json");
+//                File tempJSON = new File(mixedData.toString() + "/ISIC_" + i + ".json");
+//                Files.move(tempJSON.toPath(), testJSON.toPath());
+//            }
+//        }
 //        this.trainData = new File(trainDataPath);
 //        for(int i=0; i < mixedData.listFiles().length; i++){
 //            File tempFile = new File(mixedData.toString() + "ISIC_" + i);

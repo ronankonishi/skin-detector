@@ -44,17 +44,21 @@ public class Main {
 //
 //        NeuralNetwork network = new NeuralNetwork(UnpackagedISICData, rngseed, height, width, channels, batchSize, outputNum);
 
-        File mixedData = new File("/Users/Ronan/Desktop/ISIC_Dataset");
+//        File mixedData = new File("/Users/Ronan/Desktop/ISIC_Dataset");
 
-        NeuralNetwork network = new NeuralNetwork(mixedData, rngseed, height, width, channels, batchSize, outputNum);
+        File mixedData = new File("C:/Users/ronan/Desktop/test/mixedData");
+        File trainData = new File("C:/Users/ronan/Desktop/test/trainData/");
+        File testData = new File("C:/Users/ronan/Desktop/test/testData/");
 
-        log.info("*****TRAIN MODEL********");
-        network.train(numEpochs);
+        NeuralNetwork network = new NeuralNetwork(mixedData, trainData, testData, rngseed, height, width, channels, batchSize, outputNum);
+
+//        log.info("*****TRAIN MODEL********");
+//        network.train(numEpochs);
 
 //        log.info("*****SAVE TRAINED MODEL******");
 //        network.saveBuild("trained_model.zip");
 
-        log.info("*****EVALUATE MODEL*******");
-        log.info(network.evaluate().stats());
+//        log.info("*****EVALUATE MODEL*******");
+//        log.info(network.evaluate().stats());
     }
 }
