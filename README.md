@@ -6,8 +6,6 @@ At this current date, studies indicate promising results when applying artificia
 
 * The program in its basic state is complete.
 * The next step is to perform tests and optimize the neural network.
-* I also plan to implement a script that automatically downloads the database of images used for training and testing the network. (isic-archive.com).
-* I also plan to implement an automatic file distibutor, which will take the data from a single database and randomly sort the data into a training and testing file.
 * Smartphone compatibiltiy is still under development. I plan to make it Android compatible first, and later expand to other operating systems.
 
 ## Compatibility
@@ -31,6 +29,8 @@ mvn clean install
 ```
 
 2. Select Maven when building in IntelliJ and select SDK as jdk
+
+3. Download [ISIC-Archive of skin-cancer images](https://isic-archive.com/#images) and move all jpg and json files to a single directory and name it ISIC_Dataset. Place this directory in skin-detector directory.
 
 ## Author
 
