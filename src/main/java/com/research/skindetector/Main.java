@@ -27,11 +27,11 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         //Image Specifications
-        int height = 80; //px height
-        int width = 80; //px width
+        int height = 150; //px height
+        int width = 150; //px width
         int channels = 3; //RGB
         int rngseed = 11;
-        int batchSize = 500;
+        int batchSize = 1000;
         int outputNum = 2;
         int numEpochs = 1; //number of iterations through entire dataset
 
@@ -53,12 +53,12 @@ public class Main {
         NeuralNetwork network = new NeuralNetwork(mixedData, trainData, testData, rngseed, height, width, channels, batchSize, outputNum);
 
 //        log.info("*****TRAIN MODEL********");
-//        network.train(numEpochs);
+        network.train(numEpochs);
 
 //        log.info("*****SAVE TRAINED MODEL******");
 //        network.saveBuild("trained_model.zip");
 
 //        log.info("*****EVALUATE MODEL*******");
-//        log.info(network.evaluate().stats());
+        log.info(network.evaluate().stats());
     }
 }

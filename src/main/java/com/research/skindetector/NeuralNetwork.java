@@ -51,7 +51,6 @@ public class NeuralNetwork {
     DataNormalization scaler;
     DataSetIterator iter;
 
-
     /**
      * Constructor for non distinguished training and testing data.
      * Also for if needing to create a neural network.
@@ -67,6 +66,14 @@ public class NeuralNetwork {
     public NeuralNetwork(File mixedData, File trainData, File testData, int rngseed, int height, int width, int channels, int batchSize, int outputNum) throws IOException {
         this.trainData = trainData;
         this.testData = testData;
+        this.rngseed = rngseed;
+        this.height = height;
+        this.width = width;
+        this.channels = channels;
+        this.batchSize = batchSize;
+        this.outputNum = outputNum;
+        this.netPath = netPath;
+        ranNumGen = new Random(rngseed);
         init();
         dataSplitter(mixedData, trainData, testData);
         log.info("Building Neural Network from scratch...");
@@ -89,6 +96,14 @@ public class NeuralNetwork {
     public NeuralNetwork(File mixedData, File trainData, File testData, int rngseed, int height, int width, int channels, int batchSize, int outputNum, String netPath) throws IOException {
         this.trainData = trainData;
         this.testData = testData;
+        this.rngseed = rngseed;
+        this.height = height;
+        this.width = width;
+        this.channels = channels;
+        this.batchSize = batchSize;
+        this.outputNum = outputNum;
+        this.netPath = netPath;
+        ranNumGen = new Random(rngseed);
         init();
         dataSplitter(mixedData, trainData, testData);
         log.info("Building Neural Network from import...");
@@ -111,6 +126,14 @@ public class NeuralNetwork {
     public NeuralNetwork(File trainData, File testData, int rngseed, int height, int width, int channels, int batchSize, int outputNum) throws IOException {
         this.trainData = trainData;
         this.testData = testData;
+        this.rngseed = rngseed;
+        this.height = height;
+        this.width = width;
+        this.channels = channels;
+        this.batchSize = batchSize;
+        this.outputNum = outputNum;
+        this.netPath = netPath;
+        ranNumGen = new Random(rngseed);
         init();
         log.info("Building Neural Network from scratch...");
         buildNet();
@@ -133,12 +156,6 @@ public class NeuralNetwork {
     public NeuralNetwork(File trainData, File testData, int rngseed, int height, int width, int channels, int batchSize, int outputNum, String netPath) throws IOException {
         this.trainData = trainData;
         this.testData = testData;
-        init();
-        log.info("Building Neural Network from import...");
-        loadNet(netPath);
-    }
-
-    private void init(){
         this.rngseed = rngseed;
         this.height = height;
         this.width = width;
@@ -147,7 +164,12 @@ public class NeuralNetwork {
         this.outputNum = outputNum;
         this.netPath = netPath;
         ranNumGen = new Random(rngseed);
+        init();
+        log.info("Building Neural Network from import...");
+        loadNet(netPath);
+    }
 
+    private void init(){
         JsonPathLabelGenerator label = new JsonPathLabelGenerator();
         recordReader = new JsonImageRecordReader(height, width, channels, label);
 //        recordReader.setListeners(new LogRecordListener());
@@ -157,7 +179,7 @@ public class NeuralNetwork {
      * Builds a neural network using gradient descent with regularization algorithm.
      */
     private void buildNet() {
-        int layer1 = 100;
+        int layer1 = 1000;
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(rngseed)
@@ -253,53 +275,20 @@ public class NeuralNetwork {
         this.trainData = trainData;
         this.testData = testData;
 
-//        File[] mixedData = new File("C:/Users/ronan/Desktop/test/mixedData").listFiles();
         File[] mixedData = mixedDataset.listFiles();
         String temp1, temp2;
         for(int i = 0; i < mixedData.length/2; i++){
             double random = Math.random();
             temp1 = mixedData[i*2].toString();
             temp2 = mixedData[i*2+1].toString();
-//            System.out.println(new File("C:/Users/ronan/Desktop/test/trainData/" + temp1.substring(temp1.lastIndexOf('\\')+1)).toPath());
             if (random > 0.25) {
-                Files.move(mixedData[i*2].toPath(), new File("C:/Users/ronan/Desktop/test/trainData/" + temp1.substring(temp1.lastIndexOf('\\')+1)).toPath());
-                Files.move(mixedData[i*2+1].toPath(), new File("C:/Users/ronan/Desktop/test/trainData/" + temp2.substring(temp2.lastIndexOf('\\')+1)).toPath());
+                Files.move(mixedData[i*2].toPath(), new File(trainData + temp1.substring(temp1.lastIndexOf('\\')+1)).toPath());
+                Files.move(mixedData[i*2+1].toPath(), new File(trainData + temp2.substring(temp2.lastIndexOf('\\')+1)).toPath());
             } else {
-                Files.move(mixedData[i*2].toPath(), new File("C:/Users/ronan/Desktop/test/testData/" + temp1.substring(temp1.lastIndexOf('\\')+1)).toPath());
-                Files.move(mixedData[i*2+1].toPath(), new File("C:/Users/ronan/Desktop/test/testData/" + temp2.substring(temp2.lastIndexOf('\\')+1)).toPath());
+                Files.move(mixedData[i*2].toPath(), new File(testData + temp1.substring(temp1.lastIndexOf('\\')+1)).toPath());
+                Files.move(mixedData[i*2+1].toPath(), new File(testData + temp2.substring(temp2.lastIndexOf('\\')+1)).toPath());
             }
         }
-
-//        removeLeadingZeros(mixedData.getName());
-//
-//        int mixedDataLength = mixedData.listFiles().length/2;
-//        for (int i = 0; i < mixedDataLength; i++) {
-//            double random = Math.random();
-//            if (random > 0.25) {
-//                File trainJPG = new File (trainData.toString() + "/ISIC_" + i + ".jpg");
-//                File tempJPG = new File(mixedData.toString() + "/ISIC_" + i + ".jpg");
-//                Files.move(tempJPG.toPath(), trainJPG.toPath());
-//
-//                File trainJSON = new File (trainData.toString() + "/ISIC_" + i + ".json");
-//                File tempJSON = new File(mixedData.toString() + "/ISIC_" + i + ".json");
-//                Files.move(tempJSON.toPath(), trainJSON.toPath());
-//            } else {
-//                File testJPG = new File (testData.toString() + "/ISIC_" + i + ".jpg");
-//                File tempJPG = new File(mixedData.toString() + "/ISIC_" + i + ".jpg");
-//                Files.move(tempJPG.toPath(), testJPG.toPath());
-//
-//                File testJSON = new File (testData.toString() + "/ISIC_" + i + ".json");
-//                File tempJSON = new File(mixedData.toString() + "/ISIC_" + i + ".json");
-//                Files.move(tempJSON.toPath(), testJSON.toPath());
-//            }
-//        }
-//        this.trainData = new File(trainDataPath);
-//        for(int i=0; i < mixedData.listFiles().length; i++){
-//            File tempFile = new File(mixedData.toString() + "ISIC_" + i);
-//            Files.move(tempFile.toPath(),trainData.toPath());
-//        }
-//        this.trainData = trainData;
-//        this.testData = testData;
     }
 
     private void loadNet(String NetPath) throws IOException {
@@ -317,10 +306,6 @@ public class NeuralNetwork {
         recordReader.initialize(file);
         iter = new RecordReaderDataSetIterator(recordReader,batchSize,1,outputNum);
         normalizeData();
-    }
-
-    private String removeLeadingZeros(String name){
-        return name.replaceFirst("^0+(?!$)", "");
     }
 
     /** Normalizes the data to a value between 0 and 1 */
