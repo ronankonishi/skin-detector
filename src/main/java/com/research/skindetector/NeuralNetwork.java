@@ -74,7 +74,7 @@ public class NeuralNetwork {
         this.outputNum = outputNum;
         this.netPath = netPath;
         ranNumGen = new Random(rngseed);
-        init();
+        vectorization();
         dataSplitter(mixedData, trainData, testData);
         log.info("Building Neural Network from scratch...");
         buildNet();
@@ -104,7 +104,7 @@ public class NeuralNetwork {
         this.outputNum = outputNum;
         this.netPath = netPath;
         ranNumGen = new Random(rngseed);
-        init();
+        vectorization();
         dataSplitter(mixedData, trainData, testData);
         log.info("Building Neural Network from import...");
         loadNet(netPath);
@@ -134,7 +134,7 @@ public class NeuralNetwork {
         this.outputNum = outputNum;
         this.netPath = netPath;
         ranNumGen = new Random(rngseed);
-        init();
+        vectorization();
         log.info("Building Neural Network from scratch...");
         buildNet();
     }
@@ -164,12 +164,12 @@ public class NeuralNetwork {
         this.outputNum = outputNum;
         this.netPath = netPath;
         ranNumGen = new Random(rngseed);
-        init();
+        vectorization();
         log.info("Building Neural Network from import...");
         loadNet(netPath);
     }
 
-    private void init(){
+    private void vectorization(){
         JsonPathLabelGenerator label = new JsonPathLabelGenerator();
         recordReader = new JsonImageRecordReader(height, width, channels, label);
 //        recordReader.setListeners(new LogRecordListener());
@@ -281,12 +281,13 @@ public class NeuralNetwork {
             double random = Math.random();
             temp1 = mixedData[i*2].toString();
             temp2 = mixedData[i*2+1].toString();
+
             if (random > 0.25) {
-                Files.move(mixedData[i*2].toPath(), new File(trainData + temp1.substring(temp1.lastIndexOf('\\')+1)).toPath());
-                Files.move(mixedData[i*2+1].toPath(), new File(trainData + temp2.substring(temp2.lastIndexOf('\\')+1)).toPath());
+                Files.move(mixedData[i*2].toPath(), new File(trainData + "\\" + temp1.substring(temp1.lastIndexOf('\\')+1)).toPath());
+                Files.move(mixedData[i*2+1].toPath(), new File(trainData + "\\" + temp2.substring(temp2.lastIndexOf('\\')+1)).toPath());
             } else {
-                Files.move(mixedData[i*2].toPath(), new File(testData + temp1.substring(temp1.lastIndexOf('\\')+1)).toPath());
-                Files.move(mixedData[i*2+1].toPath(), new File(testData + temp2.substring(temp2.lastIndexOf('\\')+1)).toPath());
+                Files.move(mixedData[i*2].toPath(), new File(testData + "\\" + temp1.substring(temp1.lastIndexOf('\\')+1)).toPath());
+                Files.move(mixedData[i*2+1].toPath(), new File(testData + "\\" + temp2.substring(temp2.lastIndexOf('\\')+1)).toPath());
             }
         }
     }

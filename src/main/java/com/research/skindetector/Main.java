@@ -27,8 +27,8 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         //Image Specifications
-        int height = 150; //px height
-        int width = 150; //px width
+        int height = 720; //px height
+        int width = 720; //px width
         int channels = 3; //RGB
         int rngseed = 11;
         int batchSize = 1000;
@@ -46,9 +46,9 @@ public class Main {
 
 //        File mixedData = new File("/Users/Ronan/Desktop/ISIC_Dataset");
 
-        File mixedData = new File("C:/Users/ronan/Desktop/test/mixedData");
-        File trainData = new File("C:/Users/ronan/Desktop/test/trainData/");
-        File testData = new File("C:/Users/ronan/Desktop/test/testData/");
+        File mixedData = new File("C:\\Users\\ronan\\Desktop\\test\\mixedData\\");
+        File trainData = new File("C:\\Users\\ronan\\Desktop\\test\\trainData\\");
+        File testData = new File("C:\\Users\\ronan\\Desktop\\test\\testData\\");
 
         NeuralNetwork network = new NeuralNetwork(mixedData, trainData, testData, rngseed, height, width, channels, batchSize, outputNum);
 

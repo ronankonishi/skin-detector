@@ -30,7 +30,7 @@ public class JsonPathLabelGenerator implements PathLabelGenerator {
     public JsonPathLabelGenerator() {}
 
     /**
-     * Gets the JSON path for a given file JPG image.
+     * Gets the label from JSON file for a given JPG image.
      * Note that the comments make testing and debugging the method much simpler.
      *
      * @param JpgPath The path of the JPG image
@@ -39,15 +39,12 @@ public class JsonPathLabelGenerator implements PathLabelGenerator {
      */
     @Override
     public Writable getLabelForPath(String JpgPath) {
-//        System.out.println(System.getProperty("user.dir")); // read working directory
-//        String file = "C:\\Users\\Ronan\\ISIC-images\\ISIC-images\\UDA-1\\ISIC_XXXXXXX.json"; //temporary read file
+        System.out.println("jpg" + JpgPath);
         String JsonPath = fileExtensionRename(JpgPath, "json");
-//        System.out.println(JsonPath); //Current Json Path print
+        System.out.println("json" + JsonPath);
         try {
-            JsonReader jsonReader = Json.createReader(new FileReader(JsonPath)); //Jsonath is absolute file path
-//            JsonReader jsonReader = Json.createReader(new FileReader(file)); //file is temporary read file
+            JsonReader jsonReader = Json.createReader(new FileReader(JsonPath)); //Json path is absolute file path
             JsonObject json = jsonReader.readObject();
-//            System.out.println(new Text(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant")));
             return new Text(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant"));
         } catch (FileNotFoundException e){ e.printStackTrace();}
        catch (IOException e){ e.printStackTrace();}
