@@ -222,9 +222,11 @@ public class NeuralNetwork {
         //Displays how well neural network is training
 //        model.setListeners(new ScoreIterationListener(10));
 
+        System.out.println("Starting to fit model");
         for(int i = 0; i < numEpochs; i++) {
             model.fit(iter);
         }
+        System.out.println("Finished fitting model");
     }
 
     /**

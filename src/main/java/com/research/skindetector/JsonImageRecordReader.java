@@ -10,6 +10,9 @@ import org.datavec.image.loader.NativeImageLoader;
 import java.io.*;
 import java.net.URI;
 import java.util.*;
+import java.nio.file.Files;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * JSON Image Record Reader
@@ -52,29 +55,70 @@ public class JsonImageRecordReader extends BaseImageRecordReader {
 //                if (appendLabel && labelGenerator != null && labelGenerator.inferLabelClasses()) {
                 Set<String> labelsSet = new HashSet<>();
                 for (URI location : locations) {
-//                    System.out.print(location + "/n"); KEEP FOR DEBUGGING
                     File imgFile = new File(location);
-                    String name = labelGenerator.getLabelForPath(location).toString();
-                    labelsSet.add(name);
-                    if (pattern != null) {
-                        String label = name.split(pattern)[patternPosition];
-                        fileNameMap.put(imgFile.toString(), label);
+//                    String name = labelGenerator.getLabelForPath(location).toString();
+//                    labelsSet.add(name);
+//                    if (pattern != null) {
+//                        String label = name.split(pattern)[patternPosition];
+//                        fileNameMap.put(imgFile.toString(), label);
+//                    }
+                    if(labelGenerator.getLabelForPath(location) != null) {
+                        String name = labelGenerator.getLabelForPath(location).toString();
+                        labelsSet.add(name);
+                    } else {
+                        File garbageCollect = new File("C:\\Users\\ronan\\Desktop\\test\\garbageCollect\\");
+                        if (!garbageCollect.exists()) {
+                            garbageCollect.mkdir();
+                        }
+                        File tempjson = new File((fileExtensionRename(imgFile.toString(),"json")));
+//                        System.out.println(imgFile.toPath());
+//                        System.out.println(garbageCollect.toPath()  + "\\" + imgFile.toString().substring(imgFile.toString().lastIndexOf('\\')+1));
+                        Files.move(imgFile.toPath(), new File(garbageCollect.toPath()  + "\\" + imgFile.toString().substring(imgFile.toString().lastIndexOf('\\')+1)).toPath());
+//                        Files.move(tempjson.toPath(), new File(garbageCollect.toPath()  + "\\" + tempjson.toString().substring(tempjson.toString().lastIndexOf('\\')+1)).toPath());
                     }
                 }
                 labels.clear();
+                System.out.println("clear");
                 labels.addAll(labelsSet);
+                System.out.println("addAll labelsSet");
             }
             iter = new FileFromPathIterator(inputSplit.locationsPathIterator()); //This handles randomization internally if necessary
+            System.out.println("Randomization");
         } else
             throw new IllegalArgumentException("No path locations found in the split.");
 
         if (split instanceof FileSplit) {
             //remove the root directory
+            System.out.println("Remove root directory?");
             FileSplit split1 = (FileSplit) split;
             labels.remove(split1.getRootDir());
         }
 
         //To ensure consistent order for label assignment (irrespective of file iteration order), we want to sort the list of labels
         Collections.sort(labels);
+        System.out.println("Collection sorted");
+    }
+    private static String fileExtensionRename(String input, String newExtension) {
+        String oldExtension = getFileExtension(input);
+
+        if (oldExtension.equals("")) {
+            return input + "." + newExtension;
+        } else {
+            return input.replaceFirst(Pattern.quote("." + oldExtension) + "$", Matcher.quoteReplacement("." + newExtension));
+        }
+    }
+
+    /**
+     * Gets the file extention.
+     * @param input File to get extension from
+     */
+    private static String getFileExtension(String input) {
+        int i = input.lastIndexOf('.');
+
+        if (i > 0 &&  i < input.length() - 1) {
+            return input.substring(i + 1);
+        } else {
+            return "";
+        }
     }
 }

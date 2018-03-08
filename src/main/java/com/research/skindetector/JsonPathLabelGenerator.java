@@ -10,6 +10,7 @@ import java.io.IOException;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.JsonValue;
 import java.io.File;
 import java.net.URI;
 import java.util.regex.Matcher;
@@ -41,20 +42,26 @@ public class JsonPathLabelGenerator implements PathLabelGenerator {
     public Writable getLabelForPath(String JpgPath) {
         System.out.println("jpg" + JpgPath);
         String JsonPath = fileExtensionRename(JpgPath, "json");
-        System.out.println("json" + JsonPath);
+//        System.out.println("json" + JsonPath);
         try {
             JsonReader jsonReader = Json.createReader(new FileReader(JsonPath)); //Json path is absolute file path
             JsonObject json = jsonReader.readObject();
-            return new Text(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant"));
+            if (!json.getJsonObject("meta").getJsonObject("clinical").isNull("benign_malignant")) {
+//                System.out.println(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant"));
+                return new Text(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant"));
+            } else {
+//                System.out.println(json.getJsonObject("meta").getJsonObject("clinical").isNull("benign_malignant"));
+                return null;
+            }
         } catch (FileNotFoundException e){ e.printStackTrace();}
-       catch (IOException e){ e.printStackTrace();}
-       catch (Exception e){ e.printStackTrace();}
-       return null;
+        catch (IOException e){ e.printStackTrace();}
+        catch (Exception e){ e.printStackTrace();}
+        return null;
     }
 
     /**
      * Gets the JSON path for a given file JPG image.
-     * 
+     *
      * @param uri The path of the JPG image
      * @return benign or malignant The status of the given input JPG image written in the JSON file
      * @return null Returns null if the method fails to create a JSON Reader object
@@ -73,7 +80,7 @@ public class JsonPathLabelGenerator implements PathLabelGenerator {
      */
     private static String fileExtensionRename(String input, String newExtension) {
         String oldExtension = getFileExtension(input);
-        
+
         if (oldExtension.equals("")) {
             return input + "." + newExtension;
         } else {
@@ -91,7 +98,7 @@ public class JsonPathLabelGenerator implements PathLabelGenerator {
         if (i > 0 &&  i < input.length() - 1) {
             return input.substring(i + 1);
         } else {
-            return "";   
+            return "";
         }
     }
 
