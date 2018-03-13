@@ -2,17 +2,26 @@ package com.research.skindetector;
 
 import org.datavec.api.split.FileSplit;
 import org.datavec.image.loader.NativeImageLoader;
+import org.deeplearning4j.api.storage.StatsStorage;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
+import org.deeplearning4j.datasets.iterator.AsyncDataSetIterator;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
+import org.deeplearning4j.nn.conf.WorkspaceMode;
 import org.deeplearning4j.nn.conf.inputs.InputType;
+import org.deeplearning4j.nn.conf.layers.ConvolutionLayer;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.deeplearning4j.parallelism.ParallelWrapper;
+import org.deeplearning4j.ui.api.UIServer;
+import org.deeplearning4j.ui.stats.StatsListener;
+import org.deeplearning4j.ui.storage.InMemoryStatsStorage;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -20,6 +29,8 @@ import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.preprocessor.DataNormalization;
 import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
+import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.learning.config.Nesterovs;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +60,8 @@ public class NeuralNetwork {
     MultiLayerNetwork model;
     JsonImageRecordReader recordReader;
     DataNormalization scaler;
-    DataSetIterator iter;
+    AsyncDataSetIterator iter;
+//    DataSetIterator iter;
 
     /**
      * Constructor for non distinguished training and testing data.
@@ -183,30 +195,76 @@ public class NeuralNetwork {
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(rngseed)
+                .iterations(1) // Training iterations as above
+                .regularization(true).l2(0.0005)
+                .learningRate(0.01)
+                .weightInit(WeightInit.XAVIER)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .iterations(1)
-                .learningRate(0.006) //alpha
-                .updater(Updater.NESTEROVS)
-                .regularization(true).l2(1e-4)
+                .updater(new Nesterovs(0.9))
                 .list()
-                .layer(0, new DenseLayer.Builder()
-                        .nIn(height*width*channels)
-                        .nOut(layer1)
-                        .activation(Activation.RELU)
-                        .weightInit(WeightInit.XAVIER)
+                .layer(0, new ConvolutionLayer.Builder(5, 5)
+                        //nIn and nOut specify depth. nIn here is the nChannels and nOut is the number of filters to be applied
+                        .nIn(3)
+                        .stride(1, 1)
+                        .nOut(20)
+                        .activation(Activation.LEAKYRELU)
                         .build())
-                .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-                        .nIn(layer1)
+                .layer(1, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
+                        .kernelSize(2,2)
+                        .stride(2,2)
+                        .build())
+                .layer(2, new ConvolutionLayer.Builder(5, 5)
+                        //Note that nIn need not be specified in later layers
+                        .stride(1, 1)
+                        .nOut(50)
+                        .activation(Activation.LEAKYRELU)
+                        .build())
+                .layer(3, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
+                        .kernelSize(2,2)
+                        .stride(2,2)
+                        .build())
+                .layer(4, new DenseLayer.Builder().activation(Activation.LEAKYRELU).nOut(500).build())
+                .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                         .nOut(outputNum)
                         .activation(Activation.SOFTMAX)
-                        .weightInit(WeightInit.XAVIER)
                         .build())
-                .pretrain(false).backprop(true)
-                .setInputType(InputType.convolutional(height,width,channels))
-                .build();
+                .setInputType(InputType.convolutionalFlat(height,width,channels))
+                .backprop(true).pretrain(false).build();
+
+//        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+//                .seed(rngseed)
+//                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+//                .iterations(1)
+//                .learningRate(0.006) //alpha
+//                .updater(Updater.NESTEROVS)
+//                .regularization(true).l2(1e-4)
+//                .list()
+//                .layer(0, new DenseLayer.Builder()
+//                        .nIn(height*width*channels)
+//                        .nOut(layer1)
+//                        .activation(Activation.RELU)
+//                        .weightInit(WeightInit.XAVIER)
+//                        .build())
+//                .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
+//                        .nIn(layer1)
+//                        .nOut(outputNum)
+//                        .activation(Activation.SOFTMAX)
+//                        .weightInit(WeightInit.XAVIER)
+//                        .build())
+//                .pretrain(false).backprop(true)
+//                .setInputType(InputType.convolutional(height,width,channels))
+//                .build();
 
         model = new MultiLayerNetwork(conf);
         model.init();
+    }
+
+    public void UIenable(){
+        UIServer uiServer = UIServer.getInstance();
+        StatsStorage statsStorage = new InMemoryStatsStorage();         //Alternative: new FileStatsStorage(File), for saving and loading later
+        int listenerFrequency = 1;
+        model.setListeners(new StatsListener(statsStorage, listenerFrequency));
+        uiServer.attach(statsStorage);
     }
 
     /**
@@ -215,12 +273,32 @@ public class NeuralNetwork {
      * @param numEpochs Determines the number of times the model iterates through the training data set
      */
     public void train(int numEpochs) throws IOException {
+        //UI enable
+        UIenable();
+
         //if trainingReady is true and evaluatingReady is false
         FileSplit train = new FileSplit(trainData, NativeImageLoader.ALLOWED_FORMATS, this.ranNumGen);
         recordReaderInit(train);
 
         //Displays how well neural network is training
 //        model.setListeners(new ScoreIterationListener(10));
+
+        //disable java garbage collector
+//        Nd4j.getMemoryManager().setAutoGcWindow(5000);
+        Nd4j.getMemoryManager().togglePeriodicGc(false);
+
+        ParallelWrapper wrapper = new ParallelWrapper.Builder(model)
+                // DataSets prefetching options. Buffer size per worker.
+                .prefetchBuffer(8)
+                // set number of workers equal to number of GPUs.
+                .workers(2)
+                // rare averaging improves performance but might reduce model accuracy
+                .averagingFrequency(5)
+                // if set to TRUE, on every averaging model score will be reported
+                .reportScoreAfterAveraging(false)
+                // 3 options here: NONE, SINGLE, SEPARATE
+                .workspaceMode(WorkspaceMode.SEPARATE)
+                .build();
 
         System.out.println("Starting to fit model");
         for(int i = 0; i < numEpochs; i++) {
@@ -240,6 +318,9 @@ public class NeuralNetwork {
         recordReaderInit(test);
 
         Evaluation eval = new Evaluation(outputNum);
+//
+//        ROC roceval = new ROC(outputNum);
+//        model.doEvaluation(iteratorTest, eval, roceval);
 
         while(iter.hasNext()) {
             DataSet next = iter.next();
@@ -307,15 +388,10 @@ public class NeuralNetwork {
     private void recordReaderInit(FileSplit file) throws IOException {
 //        recordReader.reset();
         recordReader.initialize(file);
-        iter = new RecordReaderDataSetIterator(recordReader,batchSize,1,outputNum);
-        normalizeData();
-    }
-
-    /** Normalizes the data to a value between 0 and 1 */
-    private void normalizeData(){
-        //Normalize pixel data
+        DataSetIterator temp_iter = new RecordReaderDataSetIterator(recordReader,batchSize,1,outputNum);
         scaler = new ImagePreProcessingScaler(0,1);
-        scaler.fit(iter);
-        iter.setPreProcessor(scaler);
+        scaler.fit(temp_iter);
+        temp_iter.setPreProcessor(scaler);
+        iter = new AsyncDataSetIterator(temp_iter);
     }
 }
