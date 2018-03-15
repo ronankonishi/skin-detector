@@ -49,7 +49,7 @@ public class Main {
     static int height = 28;
     static int width = 28;
     static int nChannels = 3; // Number of input channels
-    static int outputNum = 2; // The number of possible outcomes
+    static int outputNum = 5; // The number of possible outcomes
     static int iterations = 1; // Number of training iterations
     static int seed = 123; //
     static int numEpochs = 1; //number of iterations through entire dataset
@@ -59,14 +59,14 @@ public class Main {
     public static void main(String[] args) throws IOException {
         int batchSize = 20;
 //        MultiLayerNetwork net = getMnistNetwork();
-        File mixedData = new File("C:\\Users\\ronan\\Desktop\\testsmall\\mixedData\\");
-        File trainData = new File("C:\\Users\\ronan\\Desktop\\testsmall\\trainData\\");
-        File testData = new File("C:\\Users\\ronan\\Desktop\\testsmall\\testData\\");
+        File mixedData = new File("C:\\Users\\ronan\\Desktop\\test\\mixedData\\");
+        File trainData = new File("C:\\Users\\ronan\\Desktop\\test\\trainData\\");
+        File testData = new File("C:\\Users\\ronan\\Desktop\\test\\testData\\");
         NeuralNetwork network = new NeuralNetwork(mixedData, trainData, testData, rngseed, height, width, nChannels, batchSize, outputNum);
-        MultiLayerNetwork net = network.getNet();
 
 //        log.info("*****TRAIN MODEL********");
-        network.train(numEpochs);
+        network.train();
+        network.UIenable();
 //
 //        log.info("*****SAVE TRAINED MODEL******");
 //        network.saveBuild("trained_model.zip");
@@ -74,16 +74,16 @@ public class Main {
 //        log.info("*****EVALUATE MODEL*******");
 //        log.info(network.evaluate().stats());
 
-        UIServer uiServer = UIServer.getInstance();
-
-        StatsStorage statsStorage = new InMemoryStatsStorage();             //Alternative: new FileStatsStorage(File) - see UIStorageExample
-        int listenerFrequency = 1;
-        net.setListeners(new StatsListener(statsStorage, listenerFrequency));
-
-        uiServer.attach(statsStorage);
-
-        net.fit(network.getTrainIter());
-
-        System.out.println("DONE");
+//        UIServer uiServer = UIServer.getInstance();
+//
+//        StatsStorage statsStorage = new InMemoryStatsStorage();             //Alternative: new FileStatsStorage(File) - see UIStorageExample
+//        int listenerFrequency = 1;
+//        net.setListeners(new StatsListener(statsStorage, listenerFrequency));
+//
+//        uiServer.attach(statsStorage);
+//
+//        net.fit(network.getTrainIter());
+//
+//        System.out.println("DONE");
     }
 }

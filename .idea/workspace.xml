@@ -5,12 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a58deb42-7a5e-440c-b5ed-e1d8e8e4e885" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/research/skindetector/Main.java" afterPath="$PROJECT_DIR$/src/main/java/com/research/skindetector/Main.java" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/research/skindetector/NeuralNetwork.java" afterPath="$PROJECT_DIR$/src/main/java/com/research/skindetector/NeuralNetwork.java" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/research/skindetector/Main.class" afterPath="$PROJECT_DIR$/target/classes/com/research/skindetector/Main.class" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/research/skindetector/NeuralNetwork.class" afterPath="$PROJECT_DIR$/target/classes/com/research/skindetector/NeuralNetwork.class" />
-      <change beforePath="$PROJECT_DIR$/trained_model.zip" afterPath="$PROJECT_DIR$/trained_model.zip" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -27,11 +23,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
-      <file leaf-file-name="Main.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="Main.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/research/skindetector/Main.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="86">
-              <caret line="59" column="25" lean-forward="false" selection-start-line="59" selection-start-column="25" selection-end-line="59" selection-end-column="25" />
+            <state relative-caret-position="442">
+              <caret line="65" column="0" lean-forward="true" selection-start-line="65" selection-start-column="0" selection-end-line="65" selection-end-column="0" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -39,41 +35,17 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="NeuralNetwork.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="NeuralNetwork.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/research/skindetector/NeuralNetwork.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-586">
-              <caret line="193" column="8" lean-forward="false" selection-start-line="193" selection-start-column="8" selection-end-line="193" selection-end-column="8" />
+            <state relative-caret-position="1940">
+              <caret line="185" column="38" lean-forward="false" selection-start-line="185" selection-start-column="38" selection-end-line="185" selection-end-column="38" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#10245#10246#0" expanded="true" />
-                <element signature="e#10273#10274#0" expanded="true" />
-                <element signature="e#16812#16813#0" expanded="true" />
-                <element signature="e#16845#16846#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="JsonImageRecordReader.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/com/research/skindetector/JsonImageRecordReader.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1092">
-              <caret line="64" column="4" lean-forward="false" selection-start-line="64" selection-start-column="4" selection-end-line="64" selection-end-column="4" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="JsonPathLabelGenerator.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/com/research/skindetector/JsonPathLabelGenerator.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="819">
-              <caret line="54" column="13" lean-forward="false" selection-start-line="54" selection-start-column="13" selection-end-line="54" selection-end-column="13" />
-              <folding>
-                <element signature="imports" expanded="true" />
+                <element signature="e#10237#10238#0" expanded="true" />
+                <element signature="e#10265#10266#0" expanded="true" />
+                <element signature="e#15674#15675#0" expanded="true" />
+                <element signature="e#15707#15708#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -90,7 +62,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>eval</find>
       <find>recordreaderInit</find>
       <find>Iter</find>
       <find>init</find>
@@ -119,6 +90,7 @@
       <find>DataSetIter</find>
       <find>recordReader</find>
       <find>recordReaderInit</find>
+      <find>saveUpda</find>
       <find>batchsize</find>
     </findStrings>
   </component>
@@ -149,8 +121,8 @@
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/src/main/java/com/research/skindetector/UIExampleUtils.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/research/skindetector/MnistDownloader.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/research/skindetector/Main.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/research/skindetector/NeuralNetwork.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/research/skindetector/Main.java" />
       </list>
     </option>
   </component>
@@ -690,16 +662,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/research/skindetector/JsonImageRecordReader.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1092">
-          <caret line="64" column="4" lean-forward="false" selection-start-line="64" selection-start-column="4" selection-end-line="64" selection-end-column="4" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/research/skindetector/JsonPathLabelGenerator.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="819">
@@ -710,10 +672,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/research/skindetector/Main.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/research/skindetector/JsonImageRecordReader.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="86">
-          <caret line="59" column="25" lean-forward="false" selection-start-line="59" selection-start-column="25" selection-end-line="59" selection-end-column="25" />
+        <state relative-caret-position="1192">
+          <caret line="64" column="4" lean-forward="false" selection-start-line="64" selection-start-column="4" selection-end-line="64" selection-end-column="4" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -722,14 +684,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/research/skindetector/NeuralNetwork.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-586">
-          <caret line="193" column="8" lean-forward="false" selection-start-line="193" selection-start-column="8" selection-end-line="193" selection-end-column="8" />
+        <state relative-caret-position="1940">
+          <caret line="185" column="38" lean-forward="false" selection-start-line="185" selection-start-column="38" selection-end-line="185" selection-end-column="38" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#10245#10246#0" expanded="true" />
-            <element signature="e#10273#10274#0" expanded="true" />
-            <element signature="e#16812#16813#0" expanded="true" />
-            <element signature="e#16845#16846#0" expanded="true" />
+            <element signature="e#10237#10238#0" expanded="true" />
+            <element signature="e#10265#10266#0" expanded="true" />
+            <element signature="e#15674#15675#0" expanded="true" />
+            <element signature="e#15707#15708#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/research/skindetector/Main.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="442">
+          <caret line="65" column="0" lean-forward="true" selection-start-line="65" selection-start-column="0" selection-end-line="65" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>

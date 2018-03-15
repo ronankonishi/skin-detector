@@ -191,7 +191,7 @@ public class NeuralNetwork {
      * Builds a neural network using gradient descent with regularization algorithm.
      */
     private MultiLayerNetwork buildNet() {
-        
+
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(rngseed)
                 .iterations(1) // Training iterations as above
@@ -242,58 +242,63 @@ public class NeuralNetwork {
 
     public void UIenable(){
         UIServer uiServer = UIServer.getInstance();
-        StatsStorage statsStorage = new InMemoryStatsStorage();         //Alternative: new FileStatsStorage(File), for saving and loading later
+
+        StatsStorage statsStorage = new InMemoryStatsStorage();             //Alternative: new FileStatsStorage(File) - see UIStorageExample
         int listenerFrequency = 1;
-        model.setListeners(new StatsListener(statsStorage, listenerFrequency));
+        this.getNet().setListeners(new StatsListener(statsStorage, listenerFrequency));
+
         uiServer.attach(statsStorage);
+
+        this.getNet().fit(this.getTrainIter());
+
+        System.out.println("DONE");
     }
 
     /**
      * Trains the neural network with the training data.
      *
-     * @param numEpochs Determines the number of times the model iterates through the training data set
      */
-    public void train(int numEpochs) throws IOException {
+    public void train() throws IOException {
         //UI enable
 //        UIenable();
 
-        //if trainingReady is true and evaluatingReady is false
         FileSplit train = new FileSplit(trainData, NativeImageLoader.ALLOWED_FORMATS, this.ranNumGen);
-//        recordReaderInit(train);
 
         recordReader.initialize(train);
         DataSetIterator temp_iter = new RecordReaderDataSetIterator(recordReader,batchSize,1,outputNum);
         scaler = new ImagePreProcessingScaler(0,1);
         scaler.fit(temp_iter);
         temp_iter.setPreProcessor(scaler);
-        train_iter = temp_iter;
-//        train_iter = new AsyncDataSetIterator(temp_iter);
+//        train_iter = temp_iter;
+        train_iter = new AsyncDataSetIterator(temp_iter);
 
         //Displays how well neural network is training
 //        model.setListeners(new ScoreIterationListener(10));
 
         //disable java garbage collector
-//        Nd4j.getMemoryManager().setAutoGcWindow(5000);
-//        Nd4j.getMemoryManager().togglePeriodicGc(false);
-//
-//        ParallelWrapper wrapper = new ParallelWrapper.Builder(model)
-//                // DataSets prefetching options. Buffer size per worker.
-//                .prefetchBuffer(8)
-//                // set number of workers equal to number of GPUs.
-//                .workers(2)
-//                // rare averaging improves performance but might reduce model accuracy
-//                .averagingFrequency(5)
-//                // if set to TRUE, on every averaging model score will be reported
-//                .reportScoreAfterAveraging(false)
-//                // 3 options here: NONE, SINGLE, SEPARATE
-//                .workspaceMode(WorkspaceMode.SEPARATE)
-//                .build();
+        Nd4j.getMemoryManager().setAutoGcWindow(5000);
+        Nd4j.getMemoryManager().togglePeriodicGc(false);
 
-//        System.out.println("Starting to fit model");
-//        for(int i = 0; i < numEpochs; i++) {
-//            model.fit(train_iter);
-//        }
-//        System.out.println("Finished fitting model");
+        ParallelWrapper wrapper = new ParallelWrapper.Builder(model)
+                // DataSets prefetching options. Buffer size per worker.
+                .prefetchBuffer(8)
+                // set number of workers equal to number of GPUs.
+                .workers(2)
+                // rare averaging improves performance but might reduce model accuracy
+                .averagingFrequency(5)
+                // if set to TRUE, on every averaging model score will be reported
+                .reportScoreAfterAveraging(false)
+                // 3 options here: NONE, SINGLE, SEPARATE
+                .workspaceMode(WorkspaceMode.SEPARATE)
+                .build();
+    }
+
+    //@param numEpochs Determines the number of times the model iterates through the training data set
+
+    public void fitData(int numEpochs){
+        for(int i = 0; i < numEpochs; i++) {
+            model.fit(train_iter);
+        }
     }
 
     /**
@@ -302,9 +307,7 @@ public class NeuralNetwork {
      * @returns eval The output of the evaluation
      */
     public Evaluation evaluate() throws IOException {
-        //if trainingReady is false and evaluatingReady is true
         FileSplit test = new FileSplit(testData, NativeImageLoader.ALLOWED_FORMATS, ranNumGen);
-//        recordReaderInit(test);
 
         recordReader.initialize(test);
         test_iter = new RecordReaderDataSetIterator(recordReader,batchSize,1,outputNum);
@@ -374,26 +377,6 @@ public class NeuralNetwork {
         File locationToSave = new File(NetPath);
         model = ModelSerializer.restoreMultiLayerNetwork(locationToSave);
     }
-
-//    /**
-//     * Creates a record reader.
-//     *
-//     * @param file Name of path to the database wanting to be initialized
-//     */
-//    private void recordReaderInit(FileSplit file) throws IOException {
-////        recordReader.reset();
-//        recordReader.initialize(file);
-//        DataSetIterator temp_iter = new RecordRearecordReader.initialize(file);
-//        DataSetIterator temp_iter = new RecordReaderDataSetIterator(recordReader,batchSize,1,outputNum);
-//        scaler = new ImagePreProcessingScaler(0,1);
-//        scaler.fit(temp_iter);
-//        temp_iter.setPreProcessor(scaler);
-//        iter = new AsyncDataSetIterator(temp_iter);derDataSetIterator(recordReader,batchSize,1,outputNum);
-//        scaler = new ImagePreProcessingScaler(0,1);
-//        scaler.fit(temp_iter);
-//        temp_iter.setPreProcessor(scaler);
-//        iter = new AsyncDataSetIterator(temp_iter);
-//    }
 
     public DataSetIterator getTrainIter(){
         return train_iter;
