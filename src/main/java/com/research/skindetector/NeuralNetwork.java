@@ -9,7 +9,6 @@ import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
-import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.WorkspaceMode;
 import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.conf.layers.ConvolutionLayer;
@@ -44,7 +43,7 @@ import java.util.Random;
  * Convolutional Neural Network class that applies Supervised Learning.
  *
  * This is the main utility that builds, trains, and evaluates the neural network.
- * 
+ *
  * Based on deeplearning4j open source library and tutorials.
  *
  * @author Ronan Konishi
@@ -60,7 +59,8 @@ public class NeuralNetwork {
     MultiLayerNetwork model;
     JsonImageRecordReader recordReader;
     DataNormalization scaler;
-    AsyncDataSetIterator iter;
+    DataSetIterator test_iter, train_iter;
+//    AsyncDataSetIterator train_iter, test_iter;
 //    DataSetIterator iter;
 
     /**
@@ -190,9 +190,8 @@ public class NeuralNetwork {
     /**
      * Builds a neural network using gradient descent with regularization algorithm.
      */
-    private void buildNet() {
-        int layer1 = 1000;
-
+    private MultiLayerNetwork buildNet() {
+        
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(rngseed)
                 .iterations(1) // Training iterations as above
@@ -204,7 +203,7 @@ public class NeuralNetwork {
                 .list()
                 .layer(0, new ConvolutionLayer.Builder(5, 5)
                         //nIn and nOut specify depth. nIn here is the nChannels and nOut is the number of filters to be applied
-                        .nIn(3)
+                        .nIn(channels) //3
                         .stride(1, 1)
                         .nOut(20)
                         .activation(Activation.LEAKYRELU)
@@ -231,32 +230,14 @@ public class NeuralNetwork {
                 .setInputType(InputType.convolutionalFlat(height,width,channels))
                 .backprop(true).pretrain(false).build();
 
-//        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-//                .seed(rngseed)
-//                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-//                .iterations(1)
-//                .learningRate(0.006) //alpha
-//                .updater(Updater.NESTEROVS)
-//                .regularization(true).l2(1e-4)
-//                .list()
-//                .layer(0, new DenseLayer.Builder()
-//                        .nIn(height*width*channels)
-//                        .nOut(layer1)
-//                        .activation(Activation.RELU)
-//                        .weightInit(WeightInit.XAVIER)
-//                        .build())
-//                .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-//                        .nIn(layer1)
-//                        .nOut(outputNum)
-//                        .activation(Activation.SOFTMAX)
-//                        .weightInit(WeightInit.XAVIER)
-//                        .build())
-//                .pretrain(false).backprop(true)
-//                .setInputType(InputType.convolutional(height,width,channels))
-//                .build();
-
         model = new MultiLayerNetwork(conf);
         model.init();
+
+        return model;
+    }
+
+    public MultiLayerNetwork getNet(){
+        return model;
     }
 
     public void UIenable(){
@@ -274,37 +255,45 @@ public class NeuralNetwork {
      */
     public void train(int numEpochs) throws IOException {
         //UI enable
-        UIenable();
+//        UIenable();
 
         //if trainingReady is true and evaluatingReady is false
         FileSplit train = new FileSplit(trainData, NativeImageLoader.ALLOWED_FORMATS, this.ranNumGen);
-        recordReaderInit(train);
+//        recordReaderInit(train);
+
+        recordReader.initialize(train);
+        DataSetIterator temp_iter = new RecordReaderDataSetIterator(recordReader,batchSize,1,outputNum);
+        scaler = new ImagePreProcessingScaler(0,1);
+        scaler.fit(temp_iter);
+        temp_iter.setPreProcessor(scaler);
+        train_iter = temp_iter;
+//        train_iter = new AsyncDataSetIterator(temp_iter);
 
         //Displays how well neural network is training
 //        model.setListeners(new ScoreIterationListener(10));
 
         //disable java garbage collector
 //        Nd4j.getMemoryManager().setAutoGcWindow(5000);
-        Nd4j.getMemoryManager().togglePeriodicGc(false);
+//        Nd4j.getMemoryManager().togglePeriodicGc(false);
+//
+//        ParallelWrapper wrapper = new ParallelWrapper.Builder(model)
+//                // DataSets prefetching options. Buffer size per worker.
+//                .prefetchBuffer(8)
+//                // set number of workers equal to number of GPUs.
+//                .workers(2)
+//                // rare averaging improves performance but might reduce model accuracy
+//                .averagingFrequency(5)
+//                // if set to TRUE, on every averaging model score will be reported
+//                .reportScoreAfterAveraging(false)
+//                // 3 options here: NONE, SINGLE, SEPARATE
+//                .workspaceMode(WorkspaceMode.SEPARATE)
+//                .build();
 
-        ParallelWrapper wrapper = new ParallelWrapper.Builder(model)
-                // DataSets prefetching options. Buffer size per worker.
-                .prefetchBuffer(8)
-                // set number of workers equal to number of GPUs.
-                .workers(2)
-                // rare averaging improves performance but might reduce model accuracy
-                .averagingFrequency(5)
-                // if set to TRUE, on every averaging model score will be reported
-                .reportScoreAfterAveraging(false)
-                // 3 options here: NONE, SINGLE, SEPARATE
-                .workspaceMode(WorkspaceMode.SEPARATE)
-                .build();
-
-        System.out.println("Starting to fit model");
-        for(int i = 0; i < numEpochs; i++) {
-            model.fit(iter);
-        }
-        System.out.println("Finished fitting model");
+//        System.out.println("Starting to fit model");
+//        for(int i = 0; i < numEpochs; i++) {
+//            model.fit(train_iter);
+//        }
+//        System.out.println("Finished fitting model");
     }
 
     /**
@@ -315,15 +304,21 @@ public class NeuralNetwork {
     public Evaluation evaluate() throws IOException {
         //if trainingReady is false and evaluatingReady is true
         FileSplit test = new FileSplit(testData, NativeImageLoader.ALLOWED_FORMATS, ranNumGen);
-        recordReaderInit(test);
+//        recordReaderInit(test);
+
+        recordReader.initialize(test);
+        test_iter = new RecordReaderDataSetIterator(recordReader,batchSize,1,outputNum);
+        scaler = new ImagePreProcessingScaler(0,1);
+        scaler.fit(test_iter);
+        test_iter.setPreProcessor(scaler);
 
         Evaluation eval = new Evaluation(outputNum);
 //
 //        ROC roceval = new ROC(outputNum);
 //        model.doEvaluation(iteratorTest, eval, roceval);
 
-        while(iter.hasNext()) {
-            DataSet next = iter.next();
+        while(test_iter.hasNext()) {
+            DataSet next = test_iter.next();
             INDArray output = model.output(next.getFeatureMatrix());
             eval.eval(next.getLabels(), output);
         }
@@ -340,13 +335,13 @@ public class NeuralNetwork {
         boolean saveUpdater = false; //want to enable retraining of data
         ModelSerializer.writeModel(model,saveLocation,saveUpdater);
     }
-    
+
     /**
      * For testing purposes. Displays images with labels from a given database.
      *
      * @param numImages The number of images to display
      */
-    public void imageToLabelDisplay(int numImages){
+    public void imageToLabelDisplay(int numImages, DataSetIterator iter){
         for (int i = 0; i < numImages; i++) {
             DataSet ds = iter.next();
             System.out.println(ds);
@@ -380,18 +375,27 @@ public class NeuralNetwork {
         model = ModelSerializer.restoreMultiLayerNetwork(locationToSave);
     }
 
-    /**
-     * Creates a record reader.
-     *
-     * @param file Name of path to the database wanting to be initialized
-     */
-    private void recordReaderInit(FileSplit file) throws IOException {
-//        recordReader.reset();
-        recordReader.initialize(file);
-        DataSetIterator temp_iter = new RecordReaderDataSetIterator(recordReader,batchSize,1,outputNum);
-        scaler = new ImagePreProcessingScaler(0,1);
-        scaler.fit(temp_iter);
-        temp_iter.setPreProcessor(scaler);
-        iter = new AsyncDataSetIterator(temp_iter);
+//    /**
+//     * Creates a record reader.
+//     *
+//     * @param file Name of path to the database wanting to be initialized
+//     */
+//    private void recordReaderInit(FileSplit file) throws IOException {
+////        recordReader.reset();
+//        recordReader.initialize(file);
+//        DataSetIterator temp_iter = new RecordRearecordReader.initialize(file);
+//        DataSetIterator temp_iter = new RecordReaderDataSetIterator(recordReader,batchSize,1,outputNum);
+//        scaler = new ImagePreProcessingScaler(0,1);
+//        scaler.fit(temp_iter);
+//        temp_iter.setPreProcessor(scaler);
+//        iter = new AsyncDataSetIterator(temp_iter);derDataSetIterator(recordReader,batchSize,1,outputNum);
+//        scaler = new ImagePreProcessingScaler(0,1);
+//        scaler.fit(temp_iter);
+//        temp_iter.setPreProcessor(scaler);
+//        iter = new AsyncDataSetIterator(temp_iter);
+//    }
+
+    public DataSetIterator getTrainIter(){
+        return train_iter;
     }
 }
