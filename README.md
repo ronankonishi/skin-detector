@@ -32,6 +32,13 @@ mvn clean install
 
 3. Download [ISIC-Archive of skin-cancer images](https://isic-archive.com/#images) and move all jpg and json files to a single directory and name it ISIC_Dataset. Place this directory in skin-detector directory.
 
+## User Interface for Training your Neural Network
+
+In order to access the local user interface, the user should run the program and type the following into your search engine of choice
+```
+http://localhost:9001
+```
+
 ## Author
 
 * **Ronan Konishi**

@@ -40,7 +40,7 @@ public class JsonPathLabelGenerator implements PathLabelGenerator {
      */
     @Override
     public Writable getLabelForPath(String JpgPath) {
-        System.out.println("jpg" + JpgPath);
+//        System.out.println("jpg" + JpgPath);
         String JsonPath = fileExtensionRename(JpgPath, "json");
 //        System.out.println("json" + JsonPath);
         try {

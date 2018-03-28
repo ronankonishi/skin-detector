@@ -78,25 +78,25 @@ public class JsonImageRecordReader extends BaseImageRecordReader {
                     }
                 }
                 labels.clear();
-                System.out.println("clear");
+//                System.out.println("clear");
                 labels.addAll(labelsSet);
-                System.out.println("addAll labelsSet");
+//                System.out.println("addAll labelsSet");
             }
             iter = new FileFromPathIterator(inputSplit.locationsPathIterator()); //This handles randomization internally if necessary
-            System.out.println("Randomization");
+//            System.out.println("Randomization");
         } else
             throw new IllegalArgumentException("No path locations found in the split.");
 
         if (split instanceof FileSplit) {
             //remove the root directory
-            System.out.println("Remove root directory?");
+//            System.out.println("Remove root directory?");
             FileSplit split1 = (FileSplit) split;
             labels.remove(split1.getRootDir());
         }
 
         //To ensure consistent order for label assignment (irrespective of file iteration order), we want to sort the list of labels
         Collections.sort(labels);
-        System.out.println("Collection sorted");
+//        System.out.println("Collection sorted");
     }
     private static String fileExtensionRename(String input, String newExtension) {
         String oldExtension = getFileExtension(input);

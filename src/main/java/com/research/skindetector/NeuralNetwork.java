@@ -89,7 +89,7 @@ public class NeuralNetwork {
         vectorization();
         dataSplitter(mixedData, trainData, testData);
         log.info("Building Neural Network from scratch...");
-        buildNet();
+//        buildNet();
     }
 
     /**
@@ -148,7 +148,7 @@ public class NeuralNetwork {
         ranNumGen = new Random(rngseed);
         vectorization();
         log.info("Building Neural Network from scratch...");
-        buildNet();
+//        buildNet();
     }
 
     /**
@@ -190,25 +190,25 @@ public class NeuralNetwork {
     /**
      * Builds a neural network using gradient descent with regularization algorithm.
      */
-    private MultiLayerNetwork buildNet() {
+    public MultiLayerNetwork buildNet(int iterations, double learningRate, double momentum, double weightDecay) {
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .seed(rngseed)
-                .iterations(1) // Training iterations as above
-                .regularization(true).l2(0.0005)
-                .learningRate(0.01)
-                .weightInit(WeightInit.XAVIER)
-                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .updater(new Nesterovs(0.9))
+                .seed(rngseed) //saves this neural netwokr wiht the given optimizations
+                .iterations(iterations) // Training iterations as above
+                .regularization(true).l2(weightDecay) //prevents overfitting (REVIEW THIS)
+                .learningRate(learningRate) // alpha from gradient descent (how fast it goes down the gradient)
+                .weightInit(WeightInit.RELU) //method of randomizing weights in a gaussian distribution with equal variance throughout each layer
+                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)// (ideal for big data and big models) uses randomized minibatches to compute cost and gradient descent, which iterates through many minibatches
+                .updater(new Nesterovs(momentum)) //helps remove oscillation, by rounding off. (helps to start with minimal momentum 0.5 and after following gradient path well, increase momentum)
                 .list()
-                .layer(0, new ConvolutionLayer.Builder(5, 5)
+                .layer(0, new ConvolutionLayer.Builder(5, 5) //5x5 pixel feature, stride moves
                         //nIn and nOut specify depth. nIn here is the nChannels and nOut is the number of filters to be applied
                         .nIn(channels) //3
-                        .stride(1, 1)
+                        .stride(1, 1) //1px to right, then 1 px down
                         .nOut(20)
-                        .activation(Activation.LEAKYRELU)
+                        .activation(Activation.LEAKYRELU) //https://www.youtube.com/watch?v=-7scQpJT7uo (REVIEW) (shrinks values (0-256 for R in RGB) from a value between x and 1 (where 0 to 1 is linear with slope of 1 and x to 0 is linear with minimal slope)
                         .build())
-                .layer(1, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
+                .layer(1, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX) // takes max in 2x2 pixel and represents a new image where that 2x2 space equals a single pixel
                         .kernelSize(2,2)
                         .stride(2,2)
                         .build())
@@ -251,7 +251,7 @@ public class NeuralNetwork {
 
         this.getNet().fit(this.getTrainIter());
 
-        System.out.println("DONE");
+//        System.out.println("DONE");
     }
 
     /**
@@ -259,8 +259,6 @@ public class NeuralNetwork {
      *
      */
     public void train() throws IOException {
-        //UI enable
-//        UIenable();
 
         FileSplit train = new FileSplit(trainData, NativeImageLoader.ALLOWED_FORMATS, this.ranNumGen);
 
@@ -280,15 +278,10 @@ public class NeuralNetwork {
         Nd4j.getMemoryManager().togglePeriodicGc(false);
 
         ParallelWrapper wrapper = new ParallelWrapper.Builder(model)
-                // DataSets prefetching options. Buffer size per worker.
                 .prefetchBuffer(8)
-                // set number of workers equal to number of GPUs.
                 .workers(2)
-                // rare averaging improves performance but might reduce model accuracy
                 .averagingFrequency(5)
-                // if set to TRUE, on every averaging model score will be reported
                 .reportScoreAfterAveraging(false)
-                // 3 options here: NONE, SINGLE, SEPARATE
                 .workspaceMode(WorkspaceMode.SEPARATE)
                 .build();
     }
