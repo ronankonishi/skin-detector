@@ -62,9 +62,13 @@ public class JsonImageRecordReader extends BaseImageRecordReader {
 //                        String label = name.split(pattern)[patternPosition];
 //                        fileNameMap.put(imgFile.toString(), label);
 //                    }
-                    if(labelGenerator.getLabelForPath(location) != null) {
-                        String name = labelGenerator.getLabelForPath(location).toString();
-                        labelsSet.add(name);
+//                    System.out.println(labelGenerator.getLabelForPath(location).toString());
+
+                    if(labelGenerator.getLabelForPath(location) != null){
+                        if(labelGenerator.getLabelForPath(location).toString().equals("benign") || labelGenerator.getLabelForPath(location).toString().equals("malignant")) {
+                            String name = labelGenerator.getLabelForPath(location).toString();
+                            labelsSet.add(name);
+                        }
                     } else {
                         File garbageCollect = new File("C:\\Users\\ronan\\Desktop\\test\\garbageCollect\\");
                         if (!garbageCollect.exists()) {
@@ -76,6 +80,21 @@ public class JsonImageRecordReader extends BaseImageRecordReader {
                         Files.move(imgFile.toPath(), new File(garbageCollect.toPath()  + "\\" + imgFile.toString().substring(imgFile.toString().lastIndexOf('\\')+1)).toPath());
 //                        Files.move(tempjson.toPath(), new File(garbageCollect.toPath()  + "\\" + tempjson.toString().substring(tempjson.toString().lastIndexOf('\\')+1)).toPath());
                     }
+
+//                    if(labelGenerator.getLabelForPath(location) != null) {
+//                        String name = labelGenerator.getLabelForPath(location).toString();
+//                        labelsSet.add(name);
+//                    } else {
+//                        File garbageCollect = new File("C:\\Users\\ronan\\Desktop\\test\\garbageCollect\\");
+//                        if (!garbageCollect.exists()) {
+//                            garbageCollect.mkdir();
+//                        }
+//                        File tempjson = new File((fileExtensionRename(imgFile.toString(),"json")));
+////                        System.out.println(imgFile.toPath());
+////                        System.out.println(garbageCollect.toPath()  + "\\" + imgFile.toString().substring(imgFile.toString().lastIndexOf('\\')+1));
+//                        Files.move(imgFile.toPath(), new File(garbageCollect.toPath()  + "\\" + imgFile.toString().substring(imgFile.toString().lastIndexOf('\\')+1)).toPath());
+////                        Files.move(tempjson.toPath(), new File(garbageCollect.toPath()  + "\\" + tempjson.toString().substring(tempjson.toString().lastIndexOf('\\')+1)).toPath());
+//                    }
                 }
                 labels.clear();
 //                System.out.println("clear");

@@ -27,6 +27,9 @@ import org.datavec.api.writable.Text;
  */
 public class JsonPathLabelGenerator implements PathLabelGenerator {
 
+    String benign = "benign";
+    String malignant = "malignant";
+
     /** Constructor */
     public JsonPathLabelGenerator() {}
 
@@ -47,7 +50,11 @@ public class JsonPathLabelGenerator implements PathLabelGenerator {
             JsonReader jsonReader = Json.createReader(new FileReader(JsonPath)); //Json path is absolute file path
             JsonObject json = jsonReader.readObject();
             if (!json.getJsonObject("meta").getJsonObject("clinical").isNull("benign_malignant")) {
-//                System.out.println(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant"));
+//                if (!benign.equals(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant")) && !malignant.equals(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant"))) {
+//                    System.out.println("jpg" + JpgPath);
+//                    System.out.println(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant"));
+//                    System.out.println((!benign.equals(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant")) && !malignant.equals(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant"))));
+//                }
                 return new Text(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant"));
             } else {
 //                System.out.println(json.getJsonObject("meta").getJsonObject("clinical").isNull("benign_malignant"));

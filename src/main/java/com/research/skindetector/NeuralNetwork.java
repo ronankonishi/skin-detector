@@ -60,6 +60,8 @@ public class NeuralNetwork {
     JsonImageRecordReader recordReader;
     DataNormalization scaler;
     DataSetIterator test_iter, train_iter;
+    int numEpochs = 1;
+
 //    AsyncDataSetIterator train_iter, test_iter;
 //    DataSetIterator iter;
 
@@ -248,8 +250,9 @@ public class NeuralNetwork {
         this.getNet().setListeners(new StatsListener(statsStorage, listenerFrequency));
 
         uiServer.attach(statsStorage);
-
-        this.getNet().fit(this.getTrainIter());
+        for(int i = 0; i < numEpochs; i++) {
+            this.getNet().fit(this.getTrainIter());
+        }
 
 //        System.out.println("DONE");
     }
