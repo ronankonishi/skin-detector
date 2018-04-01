@@ -39,6 +39,9 @@ In order to access the local user interface, the user should run the program and
 http://localhost:9001
 ```
 
+![trainingnetui](https://user-images.githubusercontent.com/10384617/38002585-05a412c2-31e8-11e8-88a4-14e03a4e4792.png)
+
+
 ## Author
 
 * **Ronan Konishi**
