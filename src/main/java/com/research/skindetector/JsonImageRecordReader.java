@@ -39,7 +39,10 @@ public class JsonImageRecordReader extends BaseImageRecordReader {
     /**
      * Initializes the image record reader by transforming input images and labeling them with their corresponding 
      * status (either malignant or benign) in a format compatible by the deeplearning4j library.
-     * 
+     *
+     * NOTE: IF LABELS FROM JSON ARE NOT EITHER "MALIGNANT OR BENIGN", ALTHOUGH THE JPG WILL BE MOVED TO THE GARBAGECOLLECT
+     * FOLDER YOU STILL MUST MANUALLY SEARCH FOR THE JSON IN EITHER THE TRAINING OR TESTING FOLDER
+     *
      * @param split The file path for the dataset that should be initialized
      * @throws IOException
      */

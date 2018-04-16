@@ -10,6 +10,9 @@ import java.util.Random;
 /**
  * The heart of the program that calls everything needed to run.
  *
+ * NOTE: IF LABELS FROM JSON ARE NOT EITHER "MALIGNANT OR BENIGN", ALTHOUGH THE JPG WILL BE MOVED TO THE GARBAGECOLLECT
+ * FOLDER YOU STILL MUST MANUALLY SEARCH FOR THE JSON IN EITHER THE TRAINING OR TESTING FOLDER
+ *
  * @author Ronan Konishi
  * @version 1.0
  */
@@ -17,7 +20,6 @@ public class Main {
 
     static Random ranNumGen;
     static JsonImageRecordReader recordReader;
-
 
     //hyper parameters
     static double learningRate = 0.001;
