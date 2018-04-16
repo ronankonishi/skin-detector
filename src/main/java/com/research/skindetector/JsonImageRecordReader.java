@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 /**
  * JSON Image Record Reader
  *
- * A formated dataset for JPG images and labels within a JSON file.
+ * Takes in a dataset of JPG images with corresponding JSON files and labels JPG images from a value in the JSON file.
  *
  * @author Ronan Konishi
  * @version 1.0
@@ -41,6 +41,7 @@ public class JsonImageRecordReader extends BaseImageRecordReader {
      * status (either malignant or benign) in a format compatible by the deeplearning4j library.
      * 
      * @param split The file path for the dataset that should be initialized
+     * @throws IOException
      */
     @Override
     public void initialize(InputSplit split) throws IOException {
@@ -48,6 +49,7 @@ public class JsonImageRecordReader extends BaseImageRecordReader {
         if (imageLoader == null) {
             imageLoader = new NativeImageLoader(height, width, channels, imageTransform);
         }
+
         inputSplit = split;
         URI[] locations = split.locations();
         if (locations != null && locations.length >= 1) {
@@ -56,13 +58,6 @@ public class JsonImageRecordReader extends BaseImageRecordReader {
                 Set<String> labelsSet = new HashSet<>();
                 for (URI location : locations) {
                     File imgFile = new File(location);
-//                    String name = labelGenerator.getLabelForPath(location).toString();
-//                    labelsSet.add(name);
-//                    if (pattern != null) {
-//                        String label = name.split(pattern)[patternPosition];
-//                        fileNameMap.put(imgFile.toString(), label);
-//                    }
-//                    System.out.println(labelGenerator.getLabelForPath(location).toString());
 
                     if(labelGenerator.getLabelForPath(location) != null){
                         if(labelGenerator.getLabelForPath(location).toString().equals("benign") || labelGenerator.getLabelForPath(location).toString().equals("malignant")) {
@@ -80,21 +75,6 @@ public class JsonImageRecordReader extends BaseImageRecordReader {
                         Files.move(imgFile.toPath(), new File(garbageCollect.toPath()  + "\\" + imgFile.toString().substring(imgFile.toString().lastIndexOf('\\')+1)).toPath());
 //                        Files.move(tempjson.toPath(), new File(garbageCollect.toPath()  + "\\" + tempjson.toString().substring(tempjson.toString().lastIndexOf('\\')+1)).toPath());
                     }
-
-//                    if(labelGenerator.getLabelForPath(location) != null) {
-//                        String name = labelGenerator.getLabelForPath(location).toString();
-//                        labelsSet.add(name);
-//                    } else {
-//                        File garbageCollect = new File("C:\\Users\\ronan\\Desktop\\test\\garbageCollect\\");
-//                        if (!garbageCollect.exists()) {
-//                            garbageCollect.mkdir();
-//                        }
-//                        File tempjson = new File((fileExtensionRename(imgFile.toString(),"json")));
-////                        System.out.println(imgFile.toPath());
-////                        System.out.println(garbageCollect.toPath()  + "\\" + imgFile.toString().substring(imgFile.toString().lastIndexOf('\\')+1));
-//                        Files.move(imgFile.toPath(), new File(garbageCollect.toPath()  + "\\" + imgFile.toString().substring(imgFile.toString().lastIndexOf('\\')+1)).toPath());
-////                        Files.move(tempjson.toPath(), new File(garbageCollect.toPath()  + "\\" + tempjson.toString().substring(tempjson.toString().lastIndexOf('\\')+1)).toPath());
-//                    }
                 }
                 labels.clear();
 //                System.out.println("clear");
@@ -113,10 +93,18 @@ public class JsonImageRecordReader extends BaseImageRecordReader {
             labels.remove(split1.getRootDir());
         }
 
-        //To ensure consistent order for label assignment (irrespective of file iteration order), we want to sort the list of labels
+        //To ensure consistent order for label assignment (irrespective of file iteration order), sort the list of labels
         Collections.sort(labels);
 //        System.out.println("Collection sorted");
     }
+
+    /**
+     * Renames the file extension
+     *
+     * @param input The entire file name that needs extension change
+     * @param newExtension The new extension
+     * @return File with new extension
+     */
     private static String fileExtensionRename(String input, String newExtension) {
         String oldExtension = getFileExtension(input);
 
@@ -128,7 +116,8 @@ public class JsonImageRecordReader extends BaseImageRecordReader {
     }
 
     /**
-     * Gets the file extention.
+     * Gets the file extension.
+     *
      * @param input File to get extension from
      */
     private static String getFileExtension(String input) {

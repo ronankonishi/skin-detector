@@ -10,20 +10,38 @@ import java.io.IOException;
 
 /**
  * Inspired by tom hanlon (a developer from deeplearning4j)
+ *
+ * Downloads data from a given database
+ *
+ * Note that this class is not properly working because the entire ISIC_Dataset used in this study could not be saved
+ * into a github directory due to the excessively large data space requirement
  */
-
 public class DataDownloader {
     private static Logger log = LoggerFactory.getLogger(Main.class);
     public static String DATA_URL = "http://github.com/RonanK687/ISIC_Dataset/raw/master/ISIC_Dataset.tar.gz";
     public static String DATA_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "ISIC_Dataset/");
 
+    /**
+     * Constructor
+     */
     public DataDownloader(){}
 
+    /**
+     * Constructor
+     *
+     * @param DATA_URL
+     * @param DATA_PATH
+     */
     public DataDownloader(String DATA_URL, String DATA_PATH){
         this.DATA_URL = DATA_URL;
         this.DATA_PATH = DATA_PATH;
     }
 
+    /**
+     * Downloads the data
+     *
+     * @throws IOException
+     */
     public void download() throws IOException {
         File directory = new File(DATA_PATH);
 
@@ -82,5 +100,4 @@ public class DataDownloader {
     public void setDataPath(String DATA_PATH){
         this.DATA_PATH = DATA_PATH;
     }
-
 }

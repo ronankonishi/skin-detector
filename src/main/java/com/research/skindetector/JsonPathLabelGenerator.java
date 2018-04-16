@@ -1,7 +1,5 @@
 package com.research.skindetector;
 
-import org.apache.commons.io.FilenameUtils;
-
 import org.datavec.api.io.labels.PathLabelGenerator;
 import org.datavec.api.writable.Writable;
 import java.io.FileNotFoundException;
@@ -50,11 +48,6 @@ public class JsonPathLabelGenerator implements PathLabelGenerator {
             JsonReader jsonReader = Json.createReader(new FileReader(JsonPath)); //Json path is absolute file path
             JsonObject json = jsonReader.readObject();
             if (!json.getJsonObject("meta").getJsonObject("clinical").isNull("benign_malignant")) {
-//                if (!benign.equals(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant")) && !malignant.equals(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant"))) {
-//                    System.out.println("jpg" + JpgPath);
-//                    System.out.println(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant"));
-//                    System.out.println((!benign.equals(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant")) && !malignant.equals(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant"))));
-//                }
                 return new Text(json.getJsonObject("meta").getJsonObject("clinical").getString("benign_malignant"));
             } else {
 //                System.out.println(json.getJsonObject("meta").getJsonObject("clinical").isNull("benign_malignant"));
@@ -79,11 +72,11 @@ public class JsonPathLabelGenerator implements PathLabelGenerator {
     }
 
     /**
-     * Renames the given input file extension.
+     * Renames the file extension
      *
-     * @param input File to rename
-     * @param newExtension The new extension to give to file
-     * @return The output file with new extension
+     * @param input The entire file name that needs extension change
+     * @param newExtension The new extension
+     * @return File with new extension
      */
     private static String fileExtensionRename(String input, String newExtension) {
         String oldExtension = getFileExtension(input);
@@ -96,7 +89,8 @@ public class JsonPathLabelGenerator implements PathLabelGenerator {
     }
 
     /**
-     * Gets the file extention.
+     * Gets the file extension.
+     *
      * @param input File to get extension from
      */
     private static String getFileExtension(String input) {

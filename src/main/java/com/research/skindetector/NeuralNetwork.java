@@ -6,6 +6,8 @@ import org.deeplearning4j.api.storage.StatsStorage;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.deeplearning4j.datasets.iterator.AsyncDataSetIterator;
 import org.deeplearning4j.eval.Evaluation;
+import org.deeplearning4j.eval.ROC;
+import org.deeplearning4j.evaluation.EvaluationTools;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -29,6 +31,7 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.preprocessor.DataNormalization;
 import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.learning.config.Nesterovs;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
@@ -40,9 +43,9 @@ import java.nio.file.Files;
 import java.util.Random;
 
 /**
- * Convolutional Neural Network class that applies Supervised Learning.
+ * Convolutional Neural Network class that applies Supervised Learning for Skin Cancer Detection.
  *
- * This is the main utility that builds, trains, and evaluates the neural network.
+ * This is the main class that builds, trains, and evaluates the neural network.
  *
  * Based on deeplearning4j open source library and tutorials.
  *
@@ -60,22 +63,21 @@ public class NeuralNetwork {
     JsonImageRecordReader recordReader;
     DataNormalization scaler;
     DataSetIterator test_iter, train_iter;
-    int numEpochs = 1;
-
-//    AsyncDataSetIterator train_iter, test_iter;
-//    DataSetIterator iter;
+    int numEpochs = 1; //number of times trained through dataset
 
     /**
-     * Constructor for non distinguished training and testing data.
-     * Also for if needing to create a neural network.
+     * Constructor for non-distinguished training and testing data (have all data in single directory, mixed data).
+     * Also used if needing to build a neural network.
+     * Note that you still must call the .build() function in the main class
      *
      * @param mixedData Path to file with mixed data
      * @param rngseed Integer that allows for constant random generated value
      * @param height The height of image in pixels
      * @param width The width of image in pixels
      * @param channels The number of channels (e.g. 1 for gray scaled and 3 for RGB)
-     * @param batchSize
+     * @param batchSize The number of images in a given minibatch
      * @param outputNum The number of nodes in the output layer
+     * @throws IOException
      */
     public NeuralNetwork(File mixedData, File trainData, File testData, int rngseed, int height, int width, int channels, int batchSize, int outputNum) throws IOException {
         this.trainData = trainData;
@@ -91,21 +93,21 @@ public class NeuralNetwork {
         vectorization();
         dataSplitter(mixedData, trainData, testData);
         log.info("Building Neural Network from scratch...");
-//        buildNet();
     }
 
     /**
-     * Constructor for non distinguished training and testing data.
-     * Also for if importing an already built neural network.
+     * Constructor for non-distinguished training and testing data (have all data in single directory, mixed data).
+     * Also used if importing an already built neural network.
      *
      * @param mixedData Path to file with mixed data
      * @param rngseed Integer that allows for constant random generated value
      * @param height The height of image in pixels
      * @param width The width of image in pixels
      * @param channels The number of channels (e.g. 1 for gray scaled and 3 for RGB)
-     * @param batchSize
+     * @param batchSize The number of images in a given minibatch
      * @param outputNum The number of nodes in the output layer
      * @param netPath The path from which the neural network is being imported
+     * @throws IOException
      */
     public NeuralNetwork(File mixedData, File trainData, File testData, int rngseed, int height, int width, int channels, int batchSize, int outputNum, String netPath) throws IOException {
         this.trainData = trainData;
@@ -127,6 +129,7 @@ public class NeuralNetwork {
     /**
      * Constructor for preemptively defined training and testing data.
      * Also for if needing to create a neural network.
+     * Note that you still must call the .build() function in the main class
      *
      * @param trainData Path to file with training data
      * @param testData Path to file with
@@ -134,8 +137,9 @@ public class NeuralNetwork {
      * @param height The height of image in pixels
      * @param width The width of image in pixels
      * @param channels The number of channels (e.g. 1 for gray scaled and 3 for RGB)
-     * @param batchSize
+     * @param batchSize The number of images in a given minibatch
      * @param outputNum The number of nodes in the output layer
+     * @throws IOException
      */
     public NeuralNetwork(File trainData, File testData, int rngseed, int height, int width, int channels, int batchSize, int outputNum) throws IOException {
         this.trainData = trainData;
@@ -163,9 +167,10 @@ public class NeuralNetwork {
      * @param height The height of image in pixels
      * @param width The width of image in pixels
      * @param channels The number of channels (e.g. 1 for gray scaled and 3 for RGB)
-     * @param batchSize
+     * @param batchSize The number of images in a given minibatch
      * @param outputNum The number of nodes in the output layer
      * @param netPath The path from which the neural network is being imported
+     * @throws IOException
      */
     public NeuralNetwork(File trainData, File testData, int rngseed, int height, int width, int channels, int batchSize, int outputNum, String netPath) throws IOException {
         this.trainData = trainData;
@@ -183,25 +188,33 @@ public class NeuralNetwork {
         loadNet(netPath);
     }
 
+    /**
+     * Performs Image Preprocessing by labeling all of the data, scaling the images to a uniform,
+     * and vectorizing the pixels values.
+     */
     private void vectorization(){
         JsonPathLabelGenerator label = new JsonPathLabelGenerator();
         recordReader = new JsonImageRecordReader(height, width, channels, label);
-//        recordReader.setListeners(new LogRecordListener());
+//        recordReader.setListeners(new LogRecordListener()); //uncomment to check the label for each input data
     }
 
     /**
      * Builds a neural network using gradient descent with regularization algorithm.
+     *
+     * @param learningRate The rate at which the neural network learns
+     * @param momentum The rate for increasing training rate (note that it was felt unused with Adam Updater)
+     * @param weightDecay
      */
-    public MultiLayerNetwork buildNet(int iterations, double learningRate, double momentum, double weightDecay) {
+    public MultiLayerNetwork buildNet(double learningRate, double momentum, double weightDecay) {
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(rngseed) //saves this neural netwokr wiht the given optimizations
-                .iterations(iterations) // Training iterations as above
+                .iterations(1) // Training iterations as above
                 .regularization(true).l2(weightDecay) //prevents overfitting (REVIEW THIS)
                 .learningRate(learningRate) // alpha from gradient descent (how fast it goes down the gradient)
                 .weightInit(WeightInit.RELU) //method of randomizing weights in a gaussian distribution with equal variance throughout each layer
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)// (ideal for big data and big models) uses randomized minibatches to compute cost and gradient descent, which iterates through many minibatches
-                .updater(new Nesterovs(momentum)) //helps remove oscillation, by rounding off. (helps to start with minimal momentum 0.5 and after following gradient path well, increase momentum)
+                .updater(new Adam()) //helps remove oscillation, by rounding off. (helps to start with minimal momentum 0.5 and after following gradient path well, increase momentum)
                 .list()
                 .layer(0, new ConvolutionLayer.Builder(5, 5) //5x5 pixel feature, stride moves
                         //nIn and nOut specify depth. nIn here is the nChannels and nOut is the number of filters to be applied
@@ -238,48 +251,53 @@ public class NeuralNetwork {
         return model;
     }
 
+    /**
+     * Gets the neural network model
+     *
+     * @return model
+     */
     public MultiLayerNetwork getNet(){
         return model;
     }
 
+    /**
+     * Enables the User Interface to allow for analysis of the neural network training.
+     */
     public void UIenable(){
         UIServer uiServer = UIServer.getInstance();
 
-        StatsStorage statsStorage = new InMemoryStatsStorage();             //Alternative: new FileStatsStorage(File) - see UIStorageExample
-        int listenerFrequency = 1;
+        StatsStorage statsStorage = new InMemoryStatsStorage(); //Alternative: new FileStatsStorage(File) - see UIStorageExample
+        int listenerFrequency = 10;
         this.getNet().setListeners(new StatsListener(statsStorage, listenerFrequency));
 
         uiServer.attach(statsStorage);
         for(int i = 0; i < numEpochs; i++) {
             this.getNet().fit(this.getTrainIter());
         }
-
-//        System.out.println("DONE");
     }
 
     /**
      * Trains the neural network with the training data.
      *
+     * @throws IOException
      */
     public void train() throws IOException {
-
         FileSplit train = new FileSplit(trainData, NativeImageLoader.ALLOWED_FORMATS, this.ranNumGen);
 
         recordReader.initialize(train);
         DataSetIterator temp_iter = new RecordReaderDataSetIterator(recordReader,batchSize,1,outputNum);
-        scaler = new ImagePreProcessingScaler(0,1);
+        scaler = new ImagePreProcessingScaler(0,1); //normalization
         scaler.fit(temp_iter);
         temp_iter.setPreProcessor(scaler);
-//        train_iter = temp_iter;
         train_iter = new AsyncDataSetIterator(temp_iter);
 
-        //Displays how well neural network is training
-//        model.setListeners(new ScoreIterationListener(10));
+//        model.setListeners(new ScoreIterationListener(10)); //Uncomment to display how well the neural network is training
 
-        //disable java garbage collector
+        //disables the java garbage collector
         Nd4j.getMemoryManager().setAutoGcWindow(5000);
         Nd4j.getMemoryManager().togglePeriodicGc(false);
 
+        //Accommodates for java memory issues by optimizing usage of computing powers
         ParallelWrapper wrapper = new ParallelWrapper.Builder(model)
                 .prefetchBuffer(8)
                 .workers(2)
@@ -289,18 +307,11 @@ public class NeuralNetwork {
                 .build();
     }
 
-    //@param numEpochs Determines the number of times the model iterates through the training data set
-
-    public void fitData(int numEpochs){
-        for(int i = 0; i < numEpochs; i++) {
-            model.fit(train_iter);
-        }
-    }
-
     /**
      * Evaluates the neural network by running the network through the testing data set.
      *
-     * @returns eval The output of the evaluation
+     * @return eval The output of the evaluation
+     * @throws IOException
      */
     public Evaluation evaluate() throws IOException {
         FileSplit test = new FileSplit(testData, NativeImageLoader.ALLOWED_FORMATS, ranNumGen);
@@ -312,8 +323,13 @@ public class NeuralNetwork {
         test_iter.setPreProcessor(scaler);
 
         Evaluation eval = new Evaluation(outputNum);
-//
-//        ROC roceval = new ROC(outputNum);
+
+        ROC roceval = new ROC(outputNum);
+        roceval.calculateAUC();
+        roceval.calculateAUCPR();
+        roceval.getRocCurve();
+        roceval.getPrecisionRecallCurve();
+        EvaluationTools.exportRocChartsToHtmlFile(roceval, new File("roc_chart_HAM.html"));
 //        model.doEvaluation(iteratorTest, eval, roceval);
 
         while(test_iter.hasNext()) {
@@ -328,6 +344,7 @@ public class NeuralNetwork {
      * Saves the trained neural network
      *
      * @param filepath The path and file to which the neural network should be save to
+     * @throws IOException
      */
     public void saveBuild(String filepath) throws IOException {
         File saveLocation = new File(filepath);
@@ -348,6 +365,13 @@ public class NeuralNetwork {
         }
     }
 
+    /**
+     *
+     * @param mixedDataset The path to the dataset with all of the data
+     * @param trainData The path to which the training dataset should be placed
+     * @param testData The path to which the testing dataset should be placed
+     * @throws IOException
+     */
     private void dataSplitter(File mixedDataset, File trainData, File testData) throws IOException {
         this.trainData = trainData;
         this.testData = testData;
@@ -369,11 +393,22 @@ public class NeuralNetwork {
         }
     }
 
+    /**
+     * Loads the neural network
+     *
+     * @param NetPath The path to import the neural network from (should be .zip format)
+     * @throws IOException
+     */
     private void loadNet(String NetPath) throws IOException {
         File locationToSave = new File(NetPath);
         model = ModelSerializer.restoreMultiLayerNetwork(locationToSave);
     }
 
+    /**
+     * Gets the trained iterator
+     *
+     * @return train_iter
+     */
     public DataSetIterator getTrainIter(){
         return train_iter;
     }
