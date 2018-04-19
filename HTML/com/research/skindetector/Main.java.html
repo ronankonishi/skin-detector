@@ -1,0 +1,83 @@
+<html>
+<head>
+<title>Main.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.ln { color: #999999; font-weight: normal; font-style: normal; }
+.s0 { color: rgb(0,0,128); font-weight: bold; }
+.s1 { color: rgb(0,0,0); }
+.s2 { color: rgb(128,128,128); font-style: italic; }
+.s3 { color: rgb(128,128,128); font-weight: bold; font-style: italic; }
+.s4 { color: rgb(0,0,255); }
+.s5 { color: rgb(0,128,0); font-weight: bold; }
+</style>
+</head>
+<BODY BGCOLOR="#ffffff">
+<TABLE CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#c0c0c0" >
+<TR><TD><CENTER>
+<FONT FACE="Arial, Helvetica" COLOR="#000000">
+Main.java</FONT>
+</center></TD></TR></TABLE>
+<pre>
+<a name="l1"><span class="ln">1    </span></a><span class="s0">package </span><span class="s1">com.research.skindetector; 
+<a name="l2"><span class="ln">2    </span></a> 
+<a name="l3"><span class="ln">3    </span></a></span><span class="s0">import </span><span class="s1">org.slf4j.Logger; 
+<a name="l4"><span class="ln">4    </span></a></span><span class="s0">import </span><span class="s1">org.slf4j.LoggerFactory; 
+<a name="l5"><span class="ln">5    </span></a> 
+<a name="l6"><span class="ln">6    </span></a></span><span class="s0">import </span><span class="s1">java.io.File; 
+<a name="l7"><span class="ln">7    </span></a></span><span class="s0">import </span><span class="s1">java.io.IOException; 
+<a name="l8"><span class="ln">8    </span></a></span><span class="s0">import </span><span class="s1">java.util.Random; 
+<a name="l9"><span class="ln">9    </span></a> 
+<a name="l10"><span class="ln">10   </span></a></span><span class="s2">/** 
+<a name="l11"><span class="ln">11   </span></a> * The heart of the program that calls everything needed to run. 
+<a name="l12"><span class="ln">12   </span></a> * 
+<a name="l13"><span class="ln">13   </span></a> * NOTE: IF LABELS FROM JSON ARE NOT EITHER &quot;MALIGNANT OR BENIGN&quot;, ALTHOUGH THE JPG WILL BE MOVED TO THE GARBAGECOLLECT 
+<a name="l14"><span class="ln">14   </span></a> * FOLDER YOU STILL MUST MANUALLY SEARCH FOR THE JSON IN EITHER THE TRAINING OR TESTING FOLDER 
+<a name="l15"><span class="ln">15   </span></a> * 
+<a name="l16"><span class="ln">16   </span></a> * </span><span class="s3">@author </span><span class="s2">Ronan Konishi 
+<a name="l17"><span class="ln">17   </span></a> * </span><span class="s3">@version </span><span class="s2">1.0 
+<a name="l18"><span class="ln">18   </span></a> */</span><span class="s1"> 
+<a name="l19"><span class="ln">19   </span></a></span><span class="s0">public class </span><span class="s1">Main { 
+<a name="l20"><span class="ln">20   </span></a> 
+<a name="l21"><span class="ln">21   </span></a>    </span><span class="s0">static </span><span class="s1">Random ranNumGen; 
+<a name="l22"><span class="ln">22   </span></a>    </span><span class="s0">static </span><span class="s1">JsonImageRecordReader recordReader; 
+<a name="l23"><span class="ln">23   </span></a> 
+<a name="l24"><span class="ln">24   </span></a>    </span><span class="s2">//hyper parameters</span><span class="s1"> 
+<a name="l25"><span class="ln">25   </span></a>    </span><span class="s0">static double </span><span class="s1">learningRate = </span><span class="s4">0.001</span><span class="s1">; 
+<a name="l26"><span class="ln">26   </span></a>    </span><span class="s0">static double </span><span class="s1">momentum = </span><span class="s4">0.9</span><span class="s1">; 
+<a name="l27"><span class="ln">27   </span></a>    </span><span class="s0">static double </span><span class="s1">weightDecay = </span><span class="s4">0.005</span><span class="s1">; 
+<a name="l28"><span class="ln">28   </span></a> 
+<a name="l29"><span class="ln">29   </span></a>    </span><span class="s0">static int </span><span class="s1">rngseed = </span><span class="s4">123</span><span class="s1">; 
+<a name="l30"><span class="ln">30   </span></a> 
+<a name="l31"><span class="ln">31   </span></a>    </span><span class="s0">static int </span><span class="s1">height = </span><span class="s4">360</span><span class="s1">; </span><span class="s2">//of image</span><span class="s1"> 
+<a name="l32"><span class="ln">32   </span></a>    </span><span class="s0">static int </span><span class="s1">width = </span><span class="s4">360</span><span class="s1">; </span><span class="s2">//of image</span><span class="s1"> 
+<a name="l33"><span class="ln">33   </span></a>    </span><span class="s0">static int </span><span class="s1">nChannels = </span><span class="s4">3</span><span class="s1">; </span><span class="s2">// Number of input channels</span><span class="s1"> 
+<a name="l34"><span class="ln">34   </span></a>    </span><span class="s0">static int </span><span class="s1">outputNum = </span><span class="s4">2</span><span class="s1">; </span><span class="s2">// The number of possible outcomes</span><span class="s1"> 
+<a name="l35"><span class="ln">35   </span></a>    </span><span class="s0">static int </span><span class="s1">batchSize = </span><span class="s4">20</span><span class="s1">; </span><span class="s2">//batch size for Stochastic Gradient Descent</span><span class="s1"> 
+<a name="l36"><span class="ln">36   </span></a> 
+<a name="l37"><span class="ln">37   </span></a>    </span><span class="s0">private static </span><span class="s1">Logger log = LoggerFactory.getLogger(Main.</span><span class="s0">class</span><span class="s1">); 
+<a name="l38"><span class="ln">38   </span></a> 
+<a name="l39"><span class="ln">39   </span></a>    </span><span class="s0">public static void </span><span class="s1">main(String[] args) </span><span class="s0">throws </span><span class="s1">IOException { 
+<a name="l40"><span class="ln">40   </span></a></span><span class="s2">//        String trainedpath = &quot;C:\\Users\\ronan\\Documents\\AP Research\\skin-detector\\trained_model.zip&quot;; //uncomment if using an already trained model</span><span class="s1"> 
+<a name="l41"><span class="ln">41   </span></a>        File mixedData = </span><span class="s0">new </span><span class="s1">File(</span><span class="s5">&quot;C:</span><span class="s0">\\</span><span class="s5">Users</span><span class="s0">\\</span><span class="s5">ronan</span><span class="s0">\\</span><span class="s5">Desktop</span><span class="s0">\\</span><span class="s5">ISIC-images</span><span class="s0">\\</span><span class="s5">mixedData</span><span class="s0">\\</span><span class="s5">&quot;</span><span class="s1">); 
+<a name="l42"><span class="ln">42   </span></a>        File trainData = </span><span class="s0">new </span><span class="s1">File(</span><span class="s5">&quot;C:</span><span class="s0">\\</span><span class="s5">Users</span><span class="s0">\\</span><span class="s5">ronan</span><span class="s0">\\</span><span class="s5">Desktop</span><span class="s0">\\</span><span class="s5">ISIC-images</span><span class="s0">\\</span><span class="s5">trainData</span><span class="s0">\\</span><span class="s5">&quot;</span><span class="s1">); 
+<a name="l43"><span class="ln">43   </span></a>        File testData = </span><span class="s0">new </span><span class="s1">File(</span><span class="s5">&quot;C:</span><span class="s0">\\</span><span class="s5">Users</span><span class="s0">\\</span><span class="s5">ronan</span><span class="s0">\\</span><span class="s5">Desktop</span><span class="s0">\\</span><span class="s5">ISIC-images</span><span class="s0">\\</span><span class="s5">testData</span><span class="s0">\\</span><span class="s5">&quot;</span><span class="s1">); 
+<a name="l44"><span class="ln">44   </span></a>        NeuralNetwork network = </span><span class="s0">new </span><span class="s1">NeuralNetwork(mixedData, trainData, testData, rngseed, height, width, nChannels, batchSize, outputNum); 
+<a name="l45"><span class="ln">45   </span></a> 
+<a name="l46"><span class="ln">46   </span></a>        network.buildNet(learningRate, momentum, weightDecay); 
+<a name="l47"><span class="ln">47   </span></a> 
+<a name="l48"><span class="ln">48   </span></a>        log.info(</span><span class="s5">&quot;*****TRAIN MODEL********&quot;</span><span class="s1">); 
+<a name="l49"><span class="ln">49   </span></a>        network.train(); 
+<a name="l50"><span class="ln">50   </span></a> 
+<a name="l51"><span class="ln">51   </span></a>        log.info(</span><span class="s5">&quot;*****ENABLE UI********&quot;</span><span class="s1">); 
+<a name="l52"><span class="ln">52   </span></a>        network.UIenable(); 
+<a name="l53"><span class="ln">53   </span></a> 
+<a name="l54"><span class="ln">54   </span></a></span><span class="s2">//        log.info(&quot;*****SAVE TRAINED MODEL******&quot;);</span><span class="s1"> 
+<a name="l55"><span class="ln">55   </span></a></span><span class="s2">//        network.saveBuild(&quot;trained_model.zip&quot;);</span><span class="s1"> 
+<a name="l56"><span class="ln">56   </span></a> 
+<a name="l57"><span class="ln">57   </span></a>        log.info(</span><span class="s5">&quot;*****EVALUATE MODEL*******&quot;</span><span class="s1">); 
+<a name="l58"><span class="ln">58   </span></a>        log.info(network.evaluate().stats()); 
+<a name="l59"><span class="ln">59   </span></a>    } 
+<a name="l60"><span class="ln">60   </span></a>}</span></pre>
+</body>
+</html>
